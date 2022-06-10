@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1084904867827",
+    "project_id": "manage-digital-time",
+    "storage_bucket": "manage-digital-time.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1084904867827:android:affd3bcd2e9c2a479f3486",
+        "android_client_info": {
+          "package_name": "com.visionDev.digital_time"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1084904867827-3jba79sqr4jpcdc1j7q2ps2amkddan7o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSjIMJ2d6sjowvGW1nUd7gmg7Ngrfc4T0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1084904867827-3jba79sqr4jpcdc1j7q2ps2amkddan7o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
