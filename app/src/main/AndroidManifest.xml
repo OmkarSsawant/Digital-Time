@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.visionDev.digital_time">
+    package="com.visionDev.digital_time"
+    >
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
 
     <application
@@ -22,7 +24,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".service.GeoFenceListener"
+        <receiver android:name=".service.GeoFenceBroadcastReceiver"
 
             />
     </application>
