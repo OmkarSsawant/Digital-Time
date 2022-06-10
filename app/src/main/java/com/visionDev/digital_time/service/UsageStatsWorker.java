@@ -5,21 +5,18 @@ import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.ListenableWorker;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.visionDev.digital_time.utils.UsageStatsUtils;
+import com.visionDev.digital_time.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class UsageStatsStoreWorker extends Worker{
+public class UsageStatsWorker extends Worker{
 
 
     String area;
@@ -27,7 +24,7 @@ public class UsageStatsStoreWorker extends Worker{
     long startTime;
     long endTime;
 
-    public UsageStatsStoreWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public UsageStatsWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         Data data = workerParams.getInputData();
        area =  data.getString(AREA);
@@ -41,12 +38,12 @@ public class UsageStatsStoreWorker extends Worker{
     @Override
     public Result doWork() {
         UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
-        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(UsageStatsUtils.getTodayDayStart(),System.currentTimeMillis());
+        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(Utils.getTodayDayStart(),System.currentTimeMillis());
 
         Log.d(TAG, "doWork: Stats when user at "+area);
 
         //   current app usage - (day_start:entry_app_usage)
-        Map<String, UsageStats> prevStatsMap=  usageStatsManager.queryAndAggregateUsageStats(UsageStatsUtils.getTodayDayStart(),startTime-1000);
+        Map<String, UsageStats> prevStatsMap=  usageStatsManager.queryAndAggregateUsageStats(Utils.getTodayDayStart(),startTime-1000);
         Map<String,Long> intervalStats = new HashMap<>();
 
         for (String pkgName: statsMap.keySet()){
@@ -59,10 +56,18 @@ public class UsageStatsStoreWorker extends Worker{
             intervalStats.put(pkgName,appUsedTime);
         }
 
-
-        return  Result.success();
+        return  Result.success(buildResult(intervalStats));
     }
 
+
+    Data buildResult(Map<String,Long> r){
+        Data.Builder b =  new Data.Builder()
+                .putAll(buildData(startTime,endTime,area));
+        for (Map.Entry<String,Long> s : r.entrySet()){
+            b.putLong(s.getKey(),s.getValue());
+        }
+                return b.build();
+    }
 
     static Data buildData(long start,long end,String place){
         return  new Data.Builder()
@@ -72,8 +77,8 @@ public class UsageStatsStoreWorker extends Worker{
                 .build();
     }
 
-    private static final String AREA = "user.area";
-    private static final String IN_TIME = "user.in";
-    private static final String OUT_TIME = "user.out";
-    private static final String TAG = "UsageStatsStoreWorker";
+    public static final String AREA = "area";
+    public static final String IN_TIME = "in";
+    public static final String OUT_TIME = "out";
+    public static final String TAG = "UsageStatsStoreWorker";
 }
