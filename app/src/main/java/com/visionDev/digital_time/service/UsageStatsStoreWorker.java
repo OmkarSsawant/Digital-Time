@@ -8,6 +8,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.work.Data;
 import androidx.work.ListenableWorker;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
@@ -39,6 +40,7 @@ public class UsageStatsStoreWorker extends Worker{
 
 
 
+
         Log.i(TAG, "doWork: Stats when user at "+area);
         for (Map.Entry<String, UsageStats> AppStat: statsMap.entrySet()){
               String appPackage = AppStat.getKey();
@@ -48,11 +50,21 @@ public class UsageStatsStoreWorker extends Worker{
 
         }
 
+        //   current app usage - (day_start:entry_app_usage)
         return  Result.success();
     }
 
 
+    static Data buildData(long start,long end,String place){
+        return  new Data.Builder()
+                .putString(AREA,place)
+                .putLong(IN_TIME,start)
+                .putLong(OUT_TIME,end)
+                .build();
+    }
 
     private static final String AREA = "user.area";
+    private static final String IN_TIME = "user.in";
+    private static final String OUT_TIME = "user.out";
     private static final String TAG = "UsageStatsStoreWorker";
 }
