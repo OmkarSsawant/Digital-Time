@@ -1,19 +1,27 @@
 package com.visionDev.digital_time.service;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.usage.UsageStatsManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.visionDev.digital_time.MainActivity;
 
 import java.util.ArrayList;
 
@@ -39,6 +47,11 @@ public class PlaceTrackerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        ensureNotificationChannel((NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE));
+
+        startForeground(PLACE_TRACKER_NOTIF_ID,createNotification());
+
         GeofencingRequest gfr = createGeofenceRequest(intent);
 
 
@@ -99,6 +112,28 @@ public class PlaceTrackerService extends Service {
     }
 
 
+    void  ensureNotificationChannel(NotificationManager nm){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         NotificationChannel nc = new NotificationChannel(PLACE_TRACKER_NOTIF_CHANNEL_ID,"Place Tracker Channel",NotificationManager.IMPORTANCE_DEFAULT);
+             nm.createNotificationChannel(nc);
+        }
+    }
+
+    Notification createNotification(){
+      return new NotificationCompat.Builder(this,PLACE_TRACKER_NOTIF_CHANNEL_ID)
+              .setContentTitle("Your Digital Time")
+              .setContentText("We care your screen time")
+              .setContentIntent(getAppOpenIntent())
+              .setAutoCancel(true)
+               .build();
+    }
+
+    PendingIntent getAppOpenIntent(){
+        Intent intent = new Intent(this, MainActivity.class);
+        return PendingIntent.getBroadcast(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+    }
     public static final String OBSERVED_AREAS = "geofences";
+    public  static int PLACE_TRACKER_NOTIF_ID = 18092002;
+    public  static final String PLACE_TRACKER_NOTIF_CHANNEL_ID = "com.visionDev.place_tracker_channel";
 
 }

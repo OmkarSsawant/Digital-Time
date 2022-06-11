@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     void startDigitalTimeService(List<Geofence> geofences){
+        
         Intent digitalService = new Intent(this, PlaceTrackerService.class);
         digitalService.putParcelableArrayListExtra(PlaceTrackerService.OBSERVED_AREAS, (ArrayList<? extends Parcelable>) geofences);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
