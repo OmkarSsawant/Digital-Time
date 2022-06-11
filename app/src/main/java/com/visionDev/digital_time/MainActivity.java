@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -24,14 +25,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         final FirestoreManager firestore = new FirestoreManager(this);
         List<Geofence> geofences = new ArrayList<>();
         for (Campus c :
                 firestore.getCampuses(getContentResolver())) {
             geofences.add(c.toGeofence());
+            Log.i(TAG, "onCreate: "+c.toGeofence());
         }
 
         startDigitalTimeService(geofences);
+
+
 
     }
 
@@ -46,4 +51,6 @@ public class MainActivity extends AppCompatActivity {
             startService(digitalService);
         }
     }
+
+    private static final String TAG = "MainActivity";
 }
