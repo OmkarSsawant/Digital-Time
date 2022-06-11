@@ -16,7 +16,7 @@ public class Utils {
       return  calendar.getTime().getTime();
     }
 
-    public static Geofence createGeofence(String areaName, long latitude, long longitude, float radius){
+    public static Geofence createGeofence(String areaName, double latitude, double longitude, float radius){
         return new Geofence.Builder()
                 .setCircularRegion(latitude,longitude,radius)
                 .setRequestId(areaName)

@@ -72,10 +72,10 @@ public class GeoFenceBroadcastReceiver extends BroadcastReceiver {
                         IntervalUsageStat stat = IntervalUsageStat.fromData(wi.getOutputData());
                         fm.saveStat(stat,ctx.getContentResolver())
                                 .addOnSuccessListener(s->{
-
+                                    Log.i(TAG, "updateStats: SAVED STAT to Firestore");
                                 })
                                 .addOnFailureListener(f -> {
-
+                                    Log.i(TAG, "updateStats: Failed to SAVE STAT to Firestore");
                                 });
                     }
                 });

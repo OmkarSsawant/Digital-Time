@@ -17,6 +17,13 @@ import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
 
+/***
+* A Service that Observes Campus user in and out
+ * on exit triggers a firestore update of user usage and exited location
+ * in #onStartCommand takes param intent in which
+ * {@value OBSERVED_AREAS} argument is {@link com.google.android.gms.location.Geofence}'s
+ *
+* **/
 public class PlaceTrackerService extends Service {
 
     GeofencingClient mGFClient;
@@ -33,6 +40,7 @@ public class PlaceTrackerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         GeofencingRequest gfr = createGeofenceRequest(intent);
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             stopForeground(true);
