@@ -49,8 +49,9 @@ public class FirestoreManager {
     public Task<DocumentReference> saveCampus(Campus campus, ContentResolver cr){
         FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
         @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
-        String path = deviceId + "/campuses";
-        return firestore.collection(path)
+        return firestore.collection(deviceId)
+                .document()
+                .collection("campuses")
                 .add(campus);
     }
 
@@ -58,8 +59,9 @@ public class FirestoreManager {
         ArrayList<Campus> campuses = new ArrayList<>();
         FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
         @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
-        String path = deviceId + "/campuses";
-        firestore.collection(path)
+        firestore.collection(deviceId)
+                .document()
+                .collection("campuses")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                    List<DocumentSnapshot> snapshots =  queryDocumentSnapshots.getDocuments();
