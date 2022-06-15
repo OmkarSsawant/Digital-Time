@@ -2,7 +2,7 @@ package com.visionDev.digital_time.models;
 
 import androidx.work.Data;
 
-import com.visionDev.digital_time.service.UsageStatsWorker;
+import com.visionDev.digital_time.service.UsageStatsUploadWorker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,9 +58,9 @@ public class IntervalUsageStat {
 
     public static IntervalUsageStat fromData(Data data){
        IntervalUsageStat s = new IntervalUsageStat();
-        s.setPlace(data.getString(UsageStatsWorker.AREA));
-        s.setPlaceEntryTime(data.getLong(UsageStatsWorker.IN_TIME,-1L));
-        s.setPlaceExitTime(data.getLong(UsageStatsWorker.OUT_TIME,-1L));
+        s.setPlace(data.getString(UsageStatsUploadWorker.AREA));
+        s.setPlaceEntryTime(data.getLong(UsageStatsUploadWorker.IN_TIME,-1L));
+        s.setPlaceExitTime(data.getLong(UsageStatsUploadWorker.OUT_TIME,-1L));
         final HashMap<String,Long> stats = new HashMap<>();
         for (String key:
                 data.getKeyValueMap().keySet()) {

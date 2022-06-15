@@ -5,11 +5,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsetsController;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
@@ -26,6 +28,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.visionDev.digital_time.MainActivity;
 import com.visionDev.digital_time.R;
 import com.visionDev.digital_time.ui.components.CampusSelectBottomSheet;
 
@@ -37,7 +40,7 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
     GoogleMap mGoogleMap;
     Place mSelectedCampus;
     Circle circle;
-    CampusSelectBottomSheet selectBottomSheet = new CampusSelectBottomSheet();
+    CampusSelectBottomSheet selectBottomSheet ;
     private final OnMapReadyCallback callback = googleMap -> {
         mGoogleMap = googleMap;
         mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
@@ -49,6 +52,14 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+            if (container != null) {
+                container.getRootView().setSystemUiVisibility(
+                                  View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+            }
 
         return inflater.inflate(R.layout.fragment_campus_selector, container, false);
     }
@@ -72,9 +83,12 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
         }
     }
 
-    @Override
-    public void onError(@NonNull Status status) {
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        requireView()
+        .getRootView().setSystemUiVisibility(0);
     }
 
     @Override
@@ -101,6 +115,11 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
 
         );
 
+
+    }
+
+    @Override
+    public void onError(@NonNull Status status) {
 
     }
 

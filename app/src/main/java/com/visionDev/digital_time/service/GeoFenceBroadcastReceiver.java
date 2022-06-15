@@ -3,6 +3,7 @@ package com.visionDev.digital_time.service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.work.Data;
@@ -22,13 +23,19 @@ public class GeoFenceBroadcastReceiver extends BroadcastReceiver {
     long exitTime;
     String placeName;
     FirestoreManager fm;
+    SharedPreferences sharedPreferences;
+
     @Override
     public void onReceive(Context context, Intent intent) {
+
 
         if(fm==null){
             fm = new FirestoreManager(context);
         }
 
+        if(sharedPreferences == null){
+            sharedPreferences = context.getSharedPreferences("current.campus", Context.MODE_PRIVATE);
+        }
         GeofencingEvent gfe = GeofencingEvent.fromIntent(intent);
 
         if(gfe == null || gfe.hasError()){
@@ -42,6 +49,10 @@ public class GeoFenceBroadcastReceiver extends BroadcastReceiver {
                 Log.i(TAG, "onReceive: Entered "+triggeredGFs.get(0).getRequestId());
                 entryTime = System.currentTimeMillis();
                placeName =   triggeredGFs.get(0).getRequestId();
+               sharedPreferences.edit()
+                       .putString("placeName",placeName)
+                       .apply();
+
                 break;
             }
             case Geofence.GEOFENCE_TRANSITION_EXIT:
@@ -58,27 +69,14 @@ public class GeoFenceBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void updateStats(Context ctx) {
-       Data input = UsageStatsWorker.buildData(entryTime,exitTime,placeName);
-        OneTimeWorkRequest updateStatsReq = new  OneTimeWorkRequest.Builder(UsageStatsWorker.class)
+       Data input = UsageStatsUploadWorker.buildData(entryTime,exitTime,placeName);
+        OneTimeWorkRequest updateStatsReq = new  OneTimeWorkRequest.Builder(UsageStatsUploadWorker.class)
                 .addTag("UPDATE_STATS")
                 .setInputData(input)
                 .build();
         WorkManager.getInstance(ctx)
                 .enqueue(updateStatsReq);
-        WorkManager.getInstance(ctx).getWorkInfosByTagLiveData("UPDATE_STATS")
-                .observeForever(workInfos -> {
-                    WorkInfo wi = workInfos.get(workInfos.size()-1);
-                    if (wi.getState() == WorkInfo.State.SUCCEEDED){
-                        IntervalUsageStat stat = IntervalUsageStat.fromData(wi.getOutputData());
-                        fm.saveStat(stat,ctx.getContentResolver())
-                                .addOnSuccessListener(s->{
-                                    Log.i(TAG, "updateStats: SAVED STAT to Firestore");
-                                })
-                                .addOnFailureListener(f -> {
-                                    Log.i(TAG, "updateStats: Failed to SAVE STAT to Firestore");
-                                });
-                    }
-                });
+
     }
 
     public  static String TAG = "GeoFenceListener";

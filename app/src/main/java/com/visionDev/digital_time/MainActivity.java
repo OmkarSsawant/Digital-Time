@@ -14,6 +14,7 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.util.JsonUtils;
 import com.google.android.gms.location.Geofence;
 import com.google.android.libraries.places.api.Places;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(MainActivityViewModel.class);
 
@@ -57,15 +59,16 @@ public class MainActivity extends AppCompatActivity {
             Places.initialize(this,BuildConfig.MAPS_API_KEY);
         }
 
-//        final FirestoreManager firestore = new FirestoreManager(this);
-//        List<Geofence> geofences = new ArrayList<>();
-//        for (Campus c :
-//                firestore.getCampuses(getContentResolver())) {
-//            geofences.add(c.toGeofence());
-//            Log.i(TAG, "onCreate: "+c.toGeofence());
-//        }
+        viewModel.updatesStats();
+        final FirestoreManager firestore = new FirestoreManager(this);
+        List<Geofence> geofences = new ArrayList<>();
+        for (Campus c :
+                firestore.getCampuses(getContentResolver())) {
+            geofences.add(c.toGeofence());
+            Log.i(TAG, "onCreate: "+c.toGeofence());
+        }
 
-//        startDigitalTimeService(geofences);
+        startDigitalTimeService(geofences);
 
 
 
@@ -73,14 +76,22 @@ public class MainActivity extends AppCompatActivity {
 
 
     void startDigitalTimeService(List<Geofence> geofences){
-//
-//        Intent digitalService = new Intent(this, PlaceTrackerService.class);
-//        digitalService.putParcelableArrayListExtra(PlaceTrackerService.OBSERVED_AREAS,new ArrayList(geofences));
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(digitalService);
-//        }else{
-//            startService(digitalService);
-//        }
+
+
+        Intent digitalService = new Intent(this, PlaceTrackerService.class);
+        digitalService.putParcelableArrayListExtra(PlaceTrackerService.OBSERVED_AREAS,new ArrayList(geofences));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(digitalService);
+        }else{
+            startService(digitalService);
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        viewModel.updatesStats();
     }
 
     private static final String TAG = "MainActivity";

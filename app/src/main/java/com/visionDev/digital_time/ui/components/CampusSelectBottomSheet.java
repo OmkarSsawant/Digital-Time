@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.GeoPoint;
@@ -23,8 +22,7 @@ import com.visionDev.digital_time.R;
 import com.visionDev.digital_time.databinding.BottomSheetCampusSelectBinding;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.ui.screens.CampusSelectorFragment;
-
-import java.util.ArrayList;
+import com.visionDev.digital_time.utils.FutureListener;
 
 public class CampusSelectBottomSheet extends BottomSheetDialogFragment implements SeekBar.OnSeekBarChangeListener {
 
@@ -72,17 +70,22 @@ public class CampusSelectBottomSheet extends BottomSheetDialogFragment implement
         selectBinding.seekBar.setOnSeekBarChangeListener(this);
         selectBinding.button.setOnClickListener(v->{
             campus.setRange(radius);
-        activityViewModel.saveCampus(campus)
-                .addOnSuccessListener(requireActivity(),success -> {
-                    requireActivity().getSupportFragmentManager()
-                            .popBackStack();
-                    Toast.makeText(requireContext(),"Saved Campus  Successfully",Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(requireActivity(),fail->{
-                    requireActivity().getSupportFragmentManager()
-                            .popBackStack();
-                    Toast.makeText(requireContext(),"Failed to save Campus",Toast.LENGTH_SHORT).show();
-                });
+        activityViewModel.saveCampus(campus, new FutureListener<Campus>() {
+            @Override
+            public void onSuccess(Campus result) {
+                requireActivity().getSupportFragmentManager()
+                        .popBackStack();
+                Toast.makeText(requireContext(),"Saved Campus  Successfully",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                requireActivity().getSupportFragmentManager()
+                        .popBackStack();
+                Toast.makeText(requireContext(),"Failed to save Campus",Toast.LENGTH_SHORT).show();
+            }
+        });
+
         });
     }
 

@@ -5,20 +5,18 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.Settings;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.core.FirestoreClient;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.models.IntervalUsageStat;
 import com.visionDev.digital_time.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class FirestoreManager {
 
@@ -37,13 +35,18 @@ public class FirestoreManager {
     }
 
 
-   public Task<DocumentReference> saveStat(IntervalUsageStat stat, ContentResolver cr){
+   public Task<Void> saveStat(IntervalUsageStat stat, ContentResolver cr){
       FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
       @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
-      String path = deviceId +'/'+ Utils.getDate() +'/' + stat.getPlace();
-      return firestore.collection(path)
-              .add(stat);
-    }
+      return firestore.collection(deviceId)
+            .document("locations")
+              .collection(stat.getPlace())
+              .document()
+              .collection(Utils.getDate())
+                .document()
+              .set(stat);
+
+   }
 
 
     public Task<DocumentReference> saveCampus(Campus campus, ContentResolver cr){
@@ -74,4 +77,16 @@ public class FirestoreManager {
         return campuses;
     }
 
+
+    public Task<QuerySnapshot> fetchCampus(Campus campus, ContentResolver cr){
+        FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
+        @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
+        return  firestore.collection(deviceId)
+                .document()
+                .collection("campuses")
+                .whereArrayContains("location",campus.getLocation())
+                .whereArrayContains("name",campus.getName())
+                .get();
+
+    }
 }

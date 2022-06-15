@@ -11,21 +11,25 @@ import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.visionDev.digital_time.models.IntervalUsageStat;
+import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class UsageStatsWorker extends Worker{
+public class UsageStatsUploadWorker extends Worker{
 
 
     String area;
     SharedPreferences mSF;
     long startTime;
     long endTime;
+    FirestoreManager firestoreManager;
 
-    public UsageStatsWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public UsageStatsUploadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
+        firestoreManager = new FirestoreManager(context);
         Data data = workerParams.getInputData();
        area =  data.getString(AREA);
        startTime = data.getLong(IN_TIME,-1L);
@@ -56,6 +60,19 @@ public class UsageStatsWorker extends Worker{
             intervalStats.put(pkgName,appUsedTime);
         }
 
+
+        IntervalUsageStat stat = new IntervalUsageStat();
+        stat.setPlaceEntryTime(startTime);
+        stat.setPlaceExitTime(endTime);
+        stat.setPlace(area);
+        stat.setUsageStats(intervalStats);
+        firestoreManager.saveStat(stat,getApplicationContext().getContentResolver()).addOnSuccessListener(v->{
+
+        })
+                .addOnFailureListener(e->{
+
+                });
+
         return  Result.success(buildResult(intervalStats));
     }
 
@@ -69,7 +86,7 @@ public class UsageStatsWorker extends Worker{
                 return b.build();
     }
 
-    static Data buildData(long start,long end,String place){
+   public static Data buildData(Long start,Long end,String place){
         return  new Data.Builder()
                 .putString(AREA,place)
                 .putLong(IN_TIME,start)
