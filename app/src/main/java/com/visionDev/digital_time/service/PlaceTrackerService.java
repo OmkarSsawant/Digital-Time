@@ -18,76 +18,59 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.visionDev.digital_time.MainActivity;
+import com.visionDev.digital_time.MainActivityViewModel;
 import com.visionDev.digital_time.R;
+import com.visionDev.digital_time.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /***
 * A Service that Observes Campus user in and out
  * on exit triggers a firestore update of user usage and exited location
  * in #onStartCommand takes param intent in which
  * {@value OBSERVED_AREAS} argument is {@link com.google.android.gms.location.Geofence}'s
- *
+ * After Each 15 minute locally the usage stat data is mapped with user location
 * **/
 public class PlaceTrackerService extends Service {
 
-//    GeofencingClient mGFClient;
-    PendingIntent geofencePendingIntent;
+
+    MainActivityViewModel viewModel;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Toast.makeText(this, "service Created", Toast.LENGTH_SHORT).show();
-
-//        mGFClient = LocationServices.getGeofencingClient(this);
+        viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(MainActivityViewModel.class);
         Log.i(TAG, "onCreate: ");
-
         ensureNotificationChannel((NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE));
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForeground(PLACE_TRACKER_NOTIF_ID,createNotification());
-        Toast.makeText(this, "service started " + startId, Toast.LENGTH_SHORT).show();
-
-//        GeofencingRequest gfr = createGeofenceRequest(intent);
-
-
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            stopForeground(true);
-//            return  START_NOT_STICKY;
-//        }
-//        mGFClient.addGeofences(gfr, getGeofencePendingIntent())
-//                .addOnSuccessListener(u -> {
-//                    Log.d(TAG, "onStartCommand: Successfully Connected geofence listener");
-//
-//                })
-//                .addOnFailureListener(u -> {
-//                    Log.d(TAG, "onStartCommand: Failed Connect geofence listener");
-//                });
+        PeriodicWorkRequest recurringUpdateRequest = new PeriodicWorkRequest
+                .Builder(UsageStatsUploadWorker.class,15, TimeUnit.MINUTES)
+                .setConstraints(
+                        new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                                .build())
+                .build();
+        WorkManager.getInstance(getApplication())
+                .enqueueUniquePeriodicWork(Constants.USAGE_UPDATER, ExistingPeriodicWorkPolicy.REPLACE,recurringUpdateRequest);
         return START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-//        mGFClient.removeGeofences(getGeofencePendingIntent())
-//                .addOnSuccessListener(uu -> {
-//                    Log.i(TAG, "onDestroy: Removed Geofences");
-//                })
-//                .addOnFailureListener(uu -> {
-//                    Log.i(TAG, "onDestroy: Failed to Remove Geofences");
-//                })
-//                ;
-        super.onDestroy();
-
     }
 
     final static  String TAG = "UdageTrackerService";
@@ -99,26 +82,6 @@ public class PlaceTrackerService extends Service {
     }
 
 
-
-
-
-   private GeofencingRequest createGeofenceRequest(Intent i){
-       List<Geofence> geofences = new ArrayList<>(i.getParcelableArrayListExtra(OBSERVED_AREAS));
-
-      return new GeofencingRequest.Builder()
-               .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-               .addGeofences(geofences )
-               .build();
-    }
-
-    private PendingIntent getGeofencePendingIntent() {
-        if (geofencePendingIntent != null) {
-            return geofencePendingIntent;
-        }
-        Intent intent = new Intent(this, GeoFenceBroadcastReceiver.class);
-        geofencePendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        return geofencePendingIntent;
-    }
 
 
     void  ensureNotificationChannel(NotificationManager nm){

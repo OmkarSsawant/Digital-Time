@@ -37,7 +37,6 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="com.visionDev.digital_time.service.GeoFenceBroadcastReceiver" />
         <service android:name="com.visionDev.digital_time.service.PlaceTrackerService"
             android:enabled="true"
             />

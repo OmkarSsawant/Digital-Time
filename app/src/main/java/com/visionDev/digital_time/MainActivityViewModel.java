@@ -25,6 +25,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.service.UsageStatsUploadWorker;
+import com.visionDev.digital_time.utils.Constants;
 import com.visionDev.digital_time.utils.FutureListener;
 import com.visionDev.digital_time.utils.ListFutureListener;
 
@@ -76,12 +77,12 @@ public class MainActivityViewModel extends AndroidViewModel {
     * All the Stats are made uploaded to firestore
     * */
     public void updatesStats() {
-       String placeName =  sharedPreferences.getString("placeName","UNKNOWN");
-       if(placeName.equals("UNKNOWN")){
+       String placeName =  sharedPreferences.getString("placeName", Constants.PLACE_OTHER);
+       if(placeName.equals(Constants.PLACE_OTHER)){
            getCurrentLocationCampus(new FutureListener<Pair<Campus,Location>>() {
                @Override
                public void onSuccess(Pair<Campus,Location> result) {
-                   String campusName = "UNKNOWN";
+                   String campusName = Constants.PLACE_OTHER;
                    if(result!=null && result.first!=null){
                        campusName = result.first.getName();
                    }

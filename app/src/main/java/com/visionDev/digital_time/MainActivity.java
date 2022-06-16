@@ -73,30 +73,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         viewModel.updatesStats();
-//        final FirestoreManager firestore = new FirestoreManager(this);
-//        firestore.getCampuses(getContentResolver(), new ListFutureListener<Campus>() {
-//            @Override
-//            public void onSuccess(List<Campus> result) {
-//                List<Geofence> geofences = new ArrayList<>();
-//
-//                for (Campus c :
-//                        result) {
-//                    geofences.add(c.toGeofence());
-//                    Log.i(TAG, "onCreate: "+c.toGeofence());
-//                }
-//
-//                if(!geofences.isEmpty())
-//                    startDigitalTimeService(geofences);
-//                else{
-//                    Toast.makeText(MainActivity.this,"No Campuses Set up",Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
 
 
     }
@@ -117,12 +93,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    void startDigitalTimeService(List<Geofence> geofences){
-
-
+    void startDigitalTimeService(){
         Intent digitalService = new Intent(MainActivity.this, PlaceTrackerService.class);
-        digitalService.putParcelableArrayListExtra(PlaceTrackerService.OBSERVED_AREAS,new ArrayList(geofences));
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(digitalService);
         }else{
