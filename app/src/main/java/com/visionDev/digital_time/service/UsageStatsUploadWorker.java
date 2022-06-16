@@ -4,6 +4,7 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -11,7 +12,8 @@ import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.visionDev.digital_time.models.IntervalUsageStat;
+import com.google.firebase.firestore.GeoPoint;
+import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.utils.Utils;
 
@@ -22,9 +24,7 @@ public class UsageStatsUploadWorker extends Worker{
 
 
     String area;
-    SharedPreferences mSF;
-    long startTime;
-    long endTime;
+    GeoPoint loc;
     FirestoreManager firestoreManager;
 
     public UsageStatsUploadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -32,10 +32,7 @@ public class UsageStatsUploadWorker extends Worker{
         firestoreManager = new FirestoreManager(context);
         Data data = workerParams.getInputData();
        area =  data.getString(AREA);
-       startTime = data.getLong(IN_TIME,-1L);
-        endTime = data.getLong(OUT_TIME,-1L);
-        mSF = getApplicationContext().getSharedPreferences("com.visionDev.usage_stats",Context.MODE_PRIVATE);
-
+        loc = new GeoPoint(data.getDouble(LOC_LAT,0), data.getDouble(LOC_LANG,0));
     }
 
     @NonNull
@@ -44,58 +41,47 @@ public class UsageStatsUploadWorker extends Worker{
         UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
         Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(Utils.getTodayDayStart(),System.currentTimeMillis());
 
-        Log.d(TAG, "doWork: Stats when user at "+area);
 
         //   current app usage - (day_start:entry_app_usage)
-        Map<String, UsageStats> prevStatsMap=  usageStatsManager.queryAndAggregateUsageStats(Utils.getTodayDayStart(),startTime-1000);
+//        Map<String, UsageStats> prevStatsMap=  usageStatsManager.queryAndAggregateUsageStats(Utils.getTodayDayStart(),startTime-1_000);
         Map<String,Long> intervalStats = new HashMap<>();
+        Log.d(TAG, "doWork: Stats when user at "+area + " : "+ statsMap.size() + " Apps Stats for "+ Utils.getTodayDayStart() + " to "+System.currentTimeMillis());
 
         for (String pkgName: statsMap.keySet()){
             UsageStats stats = statsMap.get(pkgName);
             long appUsedTime = stats.getTotalTimeInForeground() ;
-            if(prevStatsMap.containsKey(pkgName)){
-                appUsedTime -= prevStatsMap.get(pkgName).getTotalTimeInForeground();
-            }
+//            if(prevStatsMap.containsKey(pkgName)){
+//                appUsedTime -= prevStatsMap.get(pkgName).getTotalTimeInForeground();
+//            }
             Log.i(TAG, "doWork:     "+ pkgName + "       was used for      " + appUsedTime + " milliseconds") ;
+            if(appUsedTime!=0)
             intervalStats.put(pkgName,appUsedTime);
         }
 
 
-        IntervalUsageStat stat = new IntervalUsageStat();
-        stat.setPlaceEntryTime(startTime);
-        stat.setPlaceExitTime(endTime);
+        UsageStat stat = new UsageStat();
         stat.setPlace(area);
+        stat.setLocation(loc);
         stat.setUsageStats(intervalStats);
-        firestoreManager.saveStat(stat,getApplicationContext().getContentResolver()).addOnSuccessListener(v->{
+//        Log.i(TAG, "doWork: "+ String.join(",",intervalStats.keySet()));
+        firestoreManager.saveStat(stat,getApplicationContext().getContentResolver()).addOnSuccessListener(v-> Log.i(TAG, "doWork: \"Updated Stats\""))
+                .addOnFailureListener(e-> Log.i(TAG, "doWork: \"Updated Failed Stats\""));
 
-        })
-                .addOnFailureListener(e->{
-
-                });
-
-        return  Result.success(buildResult(intervalStats));
+        return  Result.success();
     }
 
 
-    Data buildResult(Map<String,Long> r){
-        Data.Builder b =  new Data.Builder()
-                .putAll(buildData(startTime,endTime,area));
-        for (Map.Entry<String,Long> s : r.entrySet()){
-            b.putLong(s.getKey(),s.getValue());
-        }
-                return b.build();
-    }
 
-   public static Data buildData(Long start,Long end,String place){
+   public static Data buildData(String place, Location geoPoint){
         return  new Data.Builder()
                 .putString(AREA,place)
-                .putLong(IN_TIME,start)
-                .putLong(OUT_TIME,end)
+                .putDouble(LOC_LAT, geoPoint.getLatitude())
+                .putDouble(LOC_LANG, geoPoint.getLongitude())
                 .build();
     }
 
     public static final String AREA = "area";
-    public static final String IN_TIME = "in";
-    public static final String OUT_TIME = "out";
+    public static final String LOC_LAT = "in";
+    public static final String LOC_LANG = "out";
     public static final String TAG = "UsageStatsStoreWorker";
 }

@@ -75,14 +75,14 @@ public class CampusSelectBottomSheet extends BottomSheetDialogFragment implement
             public void onSuccess(Campus result) {
                 requireActivity().getSupportFragmentManager()
                         .popBackStack();
-                Toast.makeText(requireContext(),"Saved Campus  Successfully",Toast.LENGTH_SHORT).show();
+                v.post(()-> Toast.makeText(requireContext(),"Saved Campus  Successfully",Toast.LENGTH_SHORT).show());
             }
 
             @Override
             public void onFailure(Exception e) {
                 requireActivity().getSupportFragmentManager()
                         .popBackStack();
-                Toast.makeText(requireContext(),"Failed to save Campus",Toast.LENGTH_SHORT).show();
+                v.post(()->Toast.makeText(requireContext(),"Failed to save Campus",Toast.LENGTH_SHORT).show());
             }
         });
 

@@ -12,7 +12,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.visionDev.digital_time.models.Campus;
-import com.visionDev.digital_time.models.IntervalUsageStat;
+import com.visionDev.digital_time.models.UsageStat;
+import com.visionDev.digital_time.utils.ListFutureListener;
 import com.visionDev.digital_time.utils.Utils;
 
 import java.util.ArrayList;
@@ -35,15 +36,13 @@ public class FirestoreManager {
     }
 
 
-   public Task<Void> saveStat(IntervalUsageStat stat, ContentResolver cr){
+   public Task<Void> saveStat(UsageStat stat, ContentResolver cr){
       FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
       @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
       return firestore.collection(deviceId)
-            .document("locations")
-              .collection(stat.getPlace())
-              .document()
+            .document("stats")
               .collection(Utils.getDate())
-                .document()
+              .document(stat.getPlace())
               .set(stat);
 
    }
@@ -53,18 +52,18 @@ public class FirestoreManager {
         FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
         @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
         return firestore.collection(deviceId)
-                .document()
-                .collection("campuses")
+                .document("campuses")
+                .collection("places")
                 .add(campus);
     }
 
-    public List<Campus> getCampuses(ContentResolver cr){
+    public void getCampuses(ContentResolver cr, ListFutureListener<Campus> futureListener){
         ArrayList<Campus> campuses = new ArrayList<>();
         FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
         @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
         firestore.collection(deviceId)
-                .document()
-                .collection("campuses")
+                .document("campuses")
+                .collection("places")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                    List<DocumentSnapshot> snapshots =  queryDocumentSnapshots.getDocuments();
@@ -72,9 +71,9 @@ public class FirestoreManager {
                        DocumentSnapshot ds =  snapshots.get(i);
                         campuses.add(Campus.fromSnapshot(ds));
                     }
+                    futureListener.onSuccess(campuses);
                 })
-                .addOnFailureListener(e -> {});
-        return campuses;
+                .addOnFailureListener(futureListener::onFailure);
     }
 
 
@@ -82,10 +81,10 @@ public class FirestoreManager {
         FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
         @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
         return  firestore.collection(deviceId)
-                .document()
-                .collection("campuses")
-                .whereArrayContains("location",campus.getLocation())
-                .whereArrayContains("name",campus.getName())
+                .document("campuses")
+                .collection("places")
+                .whereEqualTo("location",campus.getLocation())
+                .whereEqualTo("name",campus.getName())
                 .get();
 
     }

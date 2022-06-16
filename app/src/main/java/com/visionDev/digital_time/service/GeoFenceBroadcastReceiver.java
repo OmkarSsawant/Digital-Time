@@ -8,19 +8,17 @@ import android.util.Log;
 
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
-import com.visionDev.digital_time.models.IntervalUsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 
 import java.util.List;
 
 public class GeoFenceBroadcastReceiver extends BroadcastReceiver {
-    long entryTime;
-    long exitTime;
+    long entryTime=-1L;
+    long exitTime=-1L;
     String placeName;
     FirestoreManager fm;
     SharedPreferences sharedPreferences;
@@ -69,13 +67,13 @@ public class GeoFenceBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void updateStats(Context ctx) {
-       Data input = UsageStatsUploadWorker.buildData(entryTime,exitTime,placeName);
-        OneTimeWorkRequest updateStatsReq = new  OneTimeWorkRequest.Builder(UsageStatsUploadWorker.class)
-                .addTag("UPDATE_STATS")
-                .setInputData(input)
-                .build();
-        WorkManager.getInstance(ctx)
-                .enqueue(updateStatsReq);
+////       Data input = UsageStatsUploadWorker.buildData(placeName);
+//        OneTimeWorkRequest updateStatsReq = new  OneTimeWorkRequest.Builder(UsageStatsUploadWorker.class)
+//                .addTag("UPDATE_STATS")
+//                .setInputData(input)
+//                .build();
+//        WorkManager.getInstance(ctx)
+//                .enqueue(updateStatsReq);
 
     }
 
