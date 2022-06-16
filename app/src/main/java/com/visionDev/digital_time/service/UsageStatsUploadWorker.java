@@ -16,9 +16,11 @@ import com.google.firebase.firestore.GeoPoint;
 import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.repository.SharedPrefsManager;
+import com.visionDev.digital_time.utils.Constants;
 import com.visionDev.digital_time.utils.Utils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UsageStatsUploadWorker extends Worker{
@@ -28,7 +30,7 @@ public class UsageStatsUploadWorker extends Worker{
     GeoPoint loc;
     FirestoreManager firestoreManager;
     SharedPrefsManager sharedPrefsManager;
-    boolean isLocalUpdate;
+
 
     public UsageStatsUploadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -36,7 +38,7 @@ public class UsageStatsUploadWorker extends Worker{
         sharedPrefsManager =    new SharedPrefsManager(getApplicationContext());
         Data data = workerParams.getInputData();
        area =  data.getString(AREA);
-       isLocalUpdate = data.getBoolean(IS_LOCAL,true);
+
         loc = new GeoPoint(data.getDouble(LOC_LAT,0), data.getDouble(LOC_LANG,0));
     }
 
@@ -44,17 +46,34 @@ public class UsageStatsUploadWorker extends Worker{
     @Override
     public Result doWork() {
         UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
-        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(Utils.getTodayDayStart(),System.currentTimeMillis());
+        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(System.currentTimeMillis() - Constants.MILLISECONDS_OF_15,System.currentTimeMillis());
 
         Map<String,Long> intervalStats = new HashMap<>();
         Log.d(TAG, "doWork: Stats when user at "+area + " : "+ statsMap.size() + " Apps Stats for "+ Utils.getTodayDayStart() + " to "+System.currentTimeMillis());
 
-        for (String pkgName: statsMap.keySet()){
-            UsageStats stats = statsMap.get(pkgName);
-            long appUsedTime = stats.getTotalTimeInForeground() ;
-            Log.i(TAG, "doWork:     "+ pkgName + "       was used for      " + appUsedTime + " milliseconds") ;
-            if(appUsedTime!=0)
-            intervalStats.put(pkgName,appUsedTime);
+        UsageStat prevStat = sharedPrefsManager.getUsageStat(area);
+        if(prevStat!=null && prevStat.getUsageStats()!=null){
+            for (String pkgName: statsMap.keySet()){
+                UsageStats stats = statsMap.get(pkgName);
+                long appUsedTime =  stats.getTotalTimeInForeground() ;
+                if(prevStat.getUsageStats().containsKey(pkgName)){
+                    appUsedTime += prevStat.getUsageStats().get(pkgName);
+                }
+                Log.i(TAG, "doWork:     "+ pkgName + "       was used for      " + appUsedTime + " milliseconds") ;
+                if(appUsedTime!=0)
+                    intervalStats.put(pkgName,appUsedTime);
+            }
+
+        }else{
+            for (String pkgName: statsMap.keySet()){
+                UsageStats stats = statsMap.get(pkgName);
+                long appUsedTime = stats.getTotalTimeInForeground() ;
+
+                Log.i(TAG, "doWork:     "+ pkgName + "       was used for      " + appUsedTime + " milliseconds") ;
+                if(appUsedTime!=0)
+                    intervalStats.put(pkgName,appUsedTime);
+            }
+
         }
 
 
@@ -63,15 +82,9 @@ public class UsageStatsUploadWorker extends Worker{
         stat.setLocation(loc);
         stat.setUsageStats(intervalStats);
 
-      if(isLocalUpdate){
-          sharedPrefsManager
+        sharedPrefsManager
                   .saveUsageStat(stat);
-      }else{
-          //TODO:apply the cache for proper formatted upload
-            //which will be only twice a day
-          firestoreManager.saveStat(stat,getApplicationContext().getContentResolver()).addOnSuccessListener(v-> Log.i(TAG, "doWork: \"Updated Stats\""))
-                          .addOnFailureListener(e-> Log.i(TAG, "doWork: \"Updated Failed Stats\""));
-      }
+
 
         return  Result.success();
     }

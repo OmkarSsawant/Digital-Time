@@ -5,8 +5,12 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.work.OneTimeWorkRequest;
 
+import android.app.AlarmManager;
 import android.app.AppOpsManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -21,10 +25,12 @@ import com.google.android.libraries.places.api.Places;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.service.PlaceTrackerService;
+import com.visionDev.digital_time.service.UsageStatsUploadWorker;
 import com.visionDev.digital_time.utils.Constants;
 import com.visionDev.digital_time.utils.ListFutureListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -72,9 +78,18 @@ public class MainActivity extends AppCompatActivity {
             Places.initialize(this,BuildConfig.MAPS_API_KEY);
         }
 
-        viewModel.updatesStats();
 
 
+
+
+        scheduleDayUpdater();
+    }
+
+    private void scheduleDayUpdater() {
+       AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Calendar c = Calendar.getInstance();
+        c.set(0,0,0,23,58);
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME,c.getTimeInMillis(),AlarmManager.INTERVAL_DAY,getPendingDigitalTimeService());
     }
 
     private boolean hasUsageStatsSystemPermission() {
@@ -93,20 +108,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    void startDigitalTimeService(){
+    PendingIntent getPendingDigitalTimeService(){
         Intent digitalService = new Intent(MainActivity.this, PlaceTrackerService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(digitalService);
-        }else{
-            startService(digitalService);
-        }
+        return PendingIntent.getService(this,0,digitalService,PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        viewModel.updatesStats();
+
     }
 
     private static final String TAG = "MainActivity";

@@ -32,6 +32,9 @@ import com.google.android.gms.location.LocationServices;
 import com.visionDev.digital_time.MainActivity;
 import com.visionDev.digital_time.MainActivityViewModel;
 import com.visionDev.digital_time.R;
+import com.visionDev.digital_time.models.UsageStat;
+import com.visionDev.digital_time.repository.FirestoreManager;
+import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.utils.Constants;
 
 import java.util.ArrayList;
@@ -48,14 +51,21 @@ import java.util.concurrent.TimeUnit;
 public class PlaceTrackerService extends Service {
 
 
-    MainActivityViewModel viewModel;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(MainActivityViewModel.class);
         Log.i(TAG, "onCreate: ");
         ensureNotificationChannel((NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE));
+        SharedPrefsManager sharedPrefsManager = new SharedPrefsManager(getApplicationContext());
+        FirestoreManager firestoreManager = new FirestoreManager(getApplicationContext());
+    //Note : Each day at 11:58 a new service is created so  firestore is updated
+            for (UsageStat s:
+                    sharedPrefsManager.getUsageStats()) {
+                firestoreManager.saveStat(s,getApplicationContext().getContentResolver()).addOnSuccessListener(v-> Log.i(TAG, "doWork: \"Updated Stats\""))
+                        .addOnFailureListener(e-> Log.i(TAG, "doWork: \"Updated Failed Stats\""));
+            }
+
     }
 
     @Override

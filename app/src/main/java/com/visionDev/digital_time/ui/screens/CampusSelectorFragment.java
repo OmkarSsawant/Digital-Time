@@ -71,7 +71,7 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-            mapFragment.getMapAsync(callback);
+//            mapFragment.getMapAsync(callback);
         }
 
         AutocompleteSupportFragment mapSearchFragment =

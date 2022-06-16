@@ -13,6 +13,9 @@ import com.visionDev.digital_time.models.UsageStat;
 
 import java.lang.reflect.Type;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class SharedPrefsManager {
     private static final String STORE = "com.visionDev.local_cache";
@@ -34,5 +37,14 @@ public class SharedPrefsManager {
         Gson gson =  new GsonBuilder()
                 .create();
       return   gson.fromJson(mSP.getString(place,"{}"),UsageStat.class);
+    }
+
+    public List<UsageStat> getUsageStats(){
+        final ArrayList<UsageStat> stats = new ArrayList<>();
+        for (String place:
+                mSP.getAll().keySet()) {
+            stats.add(getUsageStat(place));
+        }
+        return stats;
     }
 }
