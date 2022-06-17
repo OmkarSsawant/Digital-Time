@@ -37,6 +37,7 @@
             </intent-filter>
         </activity>
 
+
         <service android:name="com.visionDev.digital_time.service.PlaceTrackerService"
             android:enabled="true"
             />

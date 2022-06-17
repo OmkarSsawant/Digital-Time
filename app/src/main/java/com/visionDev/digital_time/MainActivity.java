@@ -5,11 +5,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.work.OneTimeWorkRequest;
 
-import android.app.AlarmManager;
 import android.app.AppOpsManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,22 +14,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.provider.Settings;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.location.Geofence;
 import com.google.android.libraries.places.api.Places;
-import com.visionDev.digital_time.models.Campus;
-import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.service.PlaceTrackerService;
-import com.visionDev.digital_time.service.UsageStatsUploadWorker;
 import com.visionDev.digital_time.utils.Constants;
-import com.visionDev.digital_time.utils.ListFutureListener;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import com.visionDev.digital_time.utils.Utils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -83,16 +70,20 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        scheduleDayUpdater();
+        requireAppService();
     }
 
-    private void scheduleDayUpdater() {
-       AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//        Calendar c = Calendar.getInstance();
-//        c.set(Calendar.HOUR_OF_DAY,11);
-//        c.set(Calendar.MINUTE,50);
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30),AlarmManager.INTERVAL_DAY,getPendingDigitalTimeService());
+    private void requireAppService() {
+        //Check if service is not active than start it
+        if(!Utils.isServiceActive(this, PlaceTrackerService.class)){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(new Intent(this,PlaceTrackerService.class));
+            }else{
+                startService(new Intent(this,PlaceTrackerService.class));
+            }
+        }
     }
+
 
     private boolean hasUsageStatsSystemPermission() {
         AppOpsManager appOpsManager = (AppOpsManager) getSystemService(APP_OPS_SERVICE);
@@ -109,11 +100,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(systemPermission);
     }
 
-
-    PendingIntent getPendingDigitalTimeService(){
-        Intent digitalService = new Intent(MainActivity.this, PlaceTrackerService.class);
-        return PendingIntent.getService(this,0,digitalService,PendingIntent.FLAG_CANCEL_CURRENT);
-    }
 
 
     @Override

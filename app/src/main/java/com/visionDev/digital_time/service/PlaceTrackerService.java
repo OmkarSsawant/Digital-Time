@@ -1,6 +1,7 @@
 package com.visionDev.digital_time.service;
 
 import android.Manifest;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -38,6 +39,8 @@ import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.utils.Constants;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -83,7 +86,21 @@ public class PlaceTrackerService extends Service {
                 .build();
         WorkManager.getInstance(getApplication())
                 .enqueueUniquePeriodicWork(Constants.USAGE_UPDATER, ExistingPeriodicWorkPolicy.REPLACE,recurringUpdateRequest);
+        scheduleNightUpdater();
         return START_STICKY;
+    }
+
+    public  void scheduleNightUpdater() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE,1);
+        cal.set(Calendar.HOUR_OF_DAY,23);
+        cal.set(Calendar.MINUTE,55);
+        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),AlarmManager.INTERVAL_DAY,getPendingDigitalTimeService());
+    }
+
+    private  PendingIntent getPendingDigitalTimeService(){
+        return PendingIntent.getService(this,0,new Intent(this,PlaceTrackerService.class),PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     final static  String TAG = "UdageTrackerService";

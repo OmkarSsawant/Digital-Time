@@ -1,11 +1,18 @@
 package com.visionDev.digital_time.utils;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.Application;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
+import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
+
+import androidx.core.app.ActivityManagerCompat;
 
 import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.Geofence;
@@ -13,6 +20,7 @@ import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationServices;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.repository.FirestoreManager;
+import com.visionDev.digital_time.service.PlaceTrackerService;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -52,6 +60,19 @@ public class Utils {
 
     public static void getCampuses(FirestoreManager fm,Context context,ListFutureListener<Campus> resultFuture){
         fm.getCampuses(context.getContentResolver(),resultFuture);
+    }
+
+
+
+
+    public static boolean isServiceActive(Context context, Class serviceClass){
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> runningServices =  activityManager.getRunningServices(10);
+        for (ActivityManager.RunningServiceInfo runningService : runningServices) {
+           if(runningService.service.getClassName().equals(serviceClass.getName()))
+               return  true;
+        }
+        return false;
     }
 
     @SuppressLint("MissingPermission")
