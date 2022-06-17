@@ -56,15 +56,18 @@ public class PlaceTrackerService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate: ");
+        Toast.makeText(this,"STARTED SERVICE",Toast.LENGTH_LONG).show();
         ensureNotificationChannel((NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE));
         SharedPrefsManager sharedPrefsManager = new SharedPrefsManager(getApplicationContext());
         FirestoreManager firestoreManager = new FirestoreManager(getApplicationContext());
     //Note : Each day at 11:58 a new service is created so  firestore is updated
             for (UsageStat s:
                     sharedPrefsManager.getUsageStats()) {
+                Log.i(TAG, "onCreate: "+s);
                 firestoreManager.saveStat(s,getApplicationContext().getContentResolver()).addOnSuccessListener(v-> Log.i(TAG, "doWork: \"Updated Stats\""))
                         .addOnFailureListener(e-> Log.i(TAG, "doWork: \"Updated Failed Stats\""));
             }
+            sharedPrefsManager.reset();
 
     }
 
@@ -96,7 +99,7 @@ public class PlaceTrackerService extends Service {
 
     void  ensureNotificationChannel(NotificationManager nm){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-         NotificationChannel nc = new NotificationChannel(PLACE_TRACKER_NOTIF_CHANNEL_ID,"Place Tracker Channel",NotificationManager.IMPORTANCE_DEFAULT);
+         NotificationChannel nc = new NotificationChannel(PLACE_TRACKER_NOTIF_CHANNEL_ID,"Place Tracker Channel",NotificationManager.IMPORTANCE_HIGH);
              nm.createNotificationChannel(nc);
         }
     }

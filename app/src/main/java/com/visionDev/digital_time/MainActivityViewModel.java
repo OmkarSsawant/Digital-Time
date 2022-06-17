@@ -40,12 +40,10 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     private final FirestoreManager firestoreManager;
     private final ExecutorService backgroundWorkers = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() +1);
-    private SharedPreferences sharedPreferences ;
 
     public MainActivityViewModel(@NonNull Application application) {
         super(application);
         firestoreManager = new FirestoreManager(application);
-        sharedPreferences = application.getSharedPreferences("current.campus", Context.MODE_PRIVATE);
     }
 
 
@@ -69,80 +67,7 @@ public class MainActivityViewModel extends AndroidViewModel {
     }
 
 
-    public void getCampuses(ListFutureListener<Campus> resultFuture){
-        firestoreManager.getCampuses(getApplication().getContentResolver(),resultFuture);
-    }
 
-    /*
-    * All the Stats are made uploaded to firestore
-    * */
-    public void updatesStats() {
-       String placeName =  sharedPreferences.getString("placeName", Constants.PLACE_OTHER);
-       if(placeName.equals(Constants.PLACE_OTHER)){
-           getCurrentLocationCampus(new FutureListener<Pair<Campus,Location>>() {
-               @Override
-               public void onSuccess(Pair<Campus,Location> result) {
-                   String campusName = Constants.PLACE_OTHER;
-                   if(result!=null && result.first!=null){
-                       campusName = result.first.getName();
-                   }
-                   Log.i(TAG, "onSuccess: "+campusName);
-                   Data input = UsageStatsUploadWorker.buildData(campusName, result.second);
-                   OneTimeWorkRequest updateStatsReq = new  OneTimeWorkRequest.Builder(UsageStatsUploadWorker.class)
-                           .addTag("UPDATE_STATS")
-                           .setInputData(input)
-                           .build();
-                   WorkManager.getInstance(getApplication())
-                           .enqueue(updateStatsReq);
-               }
-
-               @Override
-               public void onFailure(Exception e) {
-                    e.printStackTrace();
-               }
-           });
-       }
-
-
-    }
-
-
-
-    @SuppressLint("MissingPermission")
-    public void getCurrentLocationCampus(FutureListener<Pair<Campus,Location>> campusFutureListener){
-        LocationServices.getFusedLocationProviderClient(getApplication())
-                .getCurrentLocation(new CurrentLocationRequest.Builder()
-
-                        .setGranularity(Granularity.GRANULARITY_FINE)
-                .build(),null)
-                .addOnSuccessListener(location -> {
-                    if(location==null) return;
-                    else {
-                        Log.i(TAG, "accept: "+location);
-                    }
-                    getCampuses(new ListFutureListener<Campus>() {
-                        @Override
-                        public void onSuccess(List<Campus> result) {
-                            for (Campus c:
-                                    result) {
-                                if(c.contains(location)){
-                                    Log.i(TAG, "onSuccess: user location inside "+c.getName());
-                                    campusFutureListener.onSuccess(new Pair<Campus,Location>(c,location));
-                                    return;
-                                }
-                            }
-                            campusFutureListener.onSuccess(new Pair<Campus,Location>(null,location));
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            campusFutureListener.onFailure(e);
-                        }
-                    });
-                })
-                .addOnFailureListener(Throwable::printStackTrace);
-
-    }
 
     @Override
     protected void onCleared() {

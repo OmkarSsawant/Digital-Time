@@ -47,4 +47,10 @@ public class SharedPrefsManager {
         }
         return stats;
     }
+
+    public void reset() {
+        mSP.edit()
+                .clear()
+                .apply();
+    }
 }

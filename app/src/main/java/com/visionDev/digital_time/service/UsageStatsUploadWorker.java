@@ -3,31 +3,31 @@ package com.visionDev.digital_time.service;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
-import androidx.work.Data;
+import androidx.annotation.Nullable;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.google.firebase.firestore.GeoPoint;
+import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.utils.Constants;
+import com.visionDev.digital_time.utils.FutureListener;
 import com.visionDev.digital_time.utils.Utils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class UsageStatsUploadWorker extends Worker{
 
 
-    String area;
-    GeoPoint loc;
+
     FirestoreManager firestoreManager;
     SharedPrefsManager sharedPrefsManager;
 
@@ -36,21 +36,38 @@ public class UsageStatsUploadWorker extends Worker{
         super(context, workerParams);
         firestoreManager = new FirestoreManager(context);
         sharedPrefsManager =    new SharedPrefsManager(getApplicationContext());
-        Data data = workerParams.getInputData();
-       area =  data.getString(AREA);
 
-        loc = new GeoPoint(data.getDouble(LOC_LAT,0), data.getDouble(LOC_LANG,0));
     }
 
     @NonNull
     @Override
     public Result doWork() {
+        Utils.getCurrentLocationAndCampus(getApplicationContext(),firestoreManager,new FutureListener<Pair<Campus,Location>>() {
+            @Override
+            public void onSuccess(Pair<Campus,Location> result) {
+
+                update(result.first, result.second);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+
+        return  Result.success();
+    }
+
+    void update(@Nullable Campus campus, Location mLocation){
         UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
         Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(System.currentTimeMillis() - Constants.MILLISECONDS_OF_15,System.currentTimeMillis());
 
         Map<String,Long> intervalStats = new HashMap<>();
-        Log.d(TAG, "doWork: Stats when user at "+area + " : "+ statsMap.size() + " Apps Stats for "+ Utils.getTodayDayStart() + " to "+System.currentTimeMillis());
-
+        String area = Constants.PLACE_OTHER;
+        if (campus != null) {
+            area = campus.getName();
+        }
         UsageStat prevStat = sharedPrefsManager.getUsageStat(area);
         if(prevStat!=null && prevStat.getUsageStats()!=null){
             for (String pkgName: statsMap.keySet()){
@@ -79,25 +96,13 @@ public class UsageStatsUploadWorker extends Worker{
 
         UsageStat stat = new UsageStat();
         stat.setPlace(area);
-        stat.setLocation(loc);
+        stat.setLocation(new GeoPoint(mLocation.getLatitude(),mLocation.getLongitude()));
         stat.setUsageStats(intervalStats);
-
         sharedPrefsManager
-                  .saveUsageStat(stat);
+                .saveUsageStat(stat);
 
-
-        return  Result.success();
     }
 
-
-
-   public static Data buildData(String place, Location geoPoint){
-        return  new Data.Builder()
-                .putString(AREA,place)
-                .putDouble(LOC_LAT, geoPoint.getLatitude())
-                .putDouble(LOC_LANG, geoPoint.getLongitude())
-                .build();
-    }
 
     public static final String AREA = "area";
     public static final String LOC_LAT = "in";

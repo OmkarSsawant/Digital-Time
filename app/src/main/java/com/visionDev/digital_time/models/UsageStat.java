@@ -1,5 +1,6 @@
 package com.visionDev.digital_time.models;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
 
 import com.google.firebase.firestore.GeoPoint;
@@ -36,6 +37,16 @@ public class UsageStat {
     }
 
     public UsageStat() {
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "UsageStat{" +
+                "place='" + place + '\'' +
+                ", usageStats=" + usageStats +
+                ", location=" + location +
+                '}';
     }
 
     public void setPlace(String place) {

@@ -32,6 +32,7 @@ import com.visionDev.digital_time.utils.ListFutureListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -87,9 +88,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void scheduleDayUpdater() {
        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Calendar c = Calendar.getInstance();
-        c.set(0,0,0,23,58);
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME,c.getTimeInMillis(),AlarmManager.INTERVAL_DAY,getPendingDigitalTimeService());
+//        Calendar c = Calendar.getInstance();
+//        c.set(Calendar.HOUR_OF_DAY,11);
+//        c.set(Calendar.MINUTE,50);
+        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30),AlarmManager.INTERVAL_DAY,getPendingDigitalTimeService());
     }
 
     private boolean hasUsageStatsSystemPermission() {
