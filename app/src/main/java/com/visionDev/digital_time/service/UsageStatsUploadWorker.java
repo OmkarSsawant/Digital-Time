@@ -61,7 +61,7 @@ public class UsageStatsUploadWorker extends Worker{
 
     void update(@Nullable Campus campus, Location mLocation){
         UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
-        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(System.currentTimeMillis() - Constants.MILLISECONDS_OF_15,System.currentTimeMillis());
+        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(sharedPrefsManager.getLastUpdatedTime(),System.currentTimeMillis());
 
         Map<String,Long> intervalStats = new HashMap<>();
         String area = Constants.PLACE_OTHER;
@@ -100,7 +100,8 @@ public class UsageStatsUploadWorker extends Worker{
         stat.setUsageStats(intervalStats);
         sharedPrefsManager
                 .saveUsageStat(stat);
-
+        sharedPrefsManager
+                .setLastUpdated(System.currentTimeMillis());
     }
 
 

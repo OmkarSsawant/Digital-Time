@@ -96,7 +96,8 @@ public class PlaceTrackerService extends Service {
         cal.add(Calendar.DATE,1);
         cal.set(Calendar.HOUR_OF_DAY,23);
         cal.set(Calendar.MINUTE,55);
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),AlarmManager.INTERVAL_DAY,getPendingDigitalTimeService());
+        alarmManager.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),getPendingDigitalTimeService());
+
     }
 
     private  PendingIntent getPendingDigitalTimeService(){

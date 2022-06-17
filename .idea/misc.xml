@@ -7,8 +7,11 @@
         <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/activity_content.xml" value="0.24635416666666668" />
         <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/bottom_sheet_campus_select.xml" value="0.24635416666666668" />
+        <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/fragment_app_lister.xml" value="0.24010416666666667" />
         <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/fragment_campus_selector.xml" value="0.24635416666666668" />
         <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/fragment_create_campus.xml" value="0.24635416666666668" />
+        <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/fragment_dashboard.xml" value="0.24010416666666667" />
+        <entry key="..\:/Users/sr sawant/AndroidStudioProjects/DigitalTime/app/src/main/res/layout/tile_app.xml" value="0.24010416666666667" />
       </map>
     </option>
   </component>

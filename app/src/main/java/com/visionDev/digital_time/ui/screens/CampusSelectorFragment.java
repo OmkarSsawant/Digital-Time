@@ -31,7 +31,9 @@ import com.google.android.libraries.places.widget.listener.PlaceSelectionListene
 import com.visionDev.digital_time.MainActivity;
 import com.visionDev.digital_time.R;
 import com.visionDev.digital_time.ui.components.CampusSelectBottomSheet;
+import com.visionDev.digital_time.utils.Constants;
 
+import java.lang.invoke.ConstantCallSite;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -53,14 +55,13 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
             if (container != null) {
-                container.getRootView().setSystemUiVisibility(
-                                  View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+                container.getRootView().setSystemUiVisibility(Constants.FULLSCREEN);
             }
-
+        container.getRootView().setOnSystemUiVisibilityChangeListener(systemUiFlag -> {
+            if(systemUiFlag!=   Constants.FULLSCREEN){
+                container.getRootView().setSystemUiVisibility(Constants.FULLSCREEN);
+            }
+        });
         return inflater.inflate(R.layout.fragment_campus_selector, container, false);
     }
 

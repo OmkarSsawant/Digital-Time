@@ -6,8 +6,8 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/host"
-        android:name="com.visionDev.digital_time.ui.screens.CampusSelectorFragment"
+        android:name="com.visionDev.digital_time.ui.screens.DashboardFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_campus_selector" />
+        tools:layout="@layout/fragment_dashboard" />
 </androidx.constraintlayout.widget.ConstraintLayout>

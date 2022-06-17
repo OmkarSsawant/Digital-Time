@@ -38,6 +38,16 @@ public class Utils {
       return  calendar.getTime().getTime();
     }
 
+    public static String getHourMinuteString(long timeMillis){
+            StringBuilder sb = new StringBuilder();
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(timeMillis);
+            sb.append(cal.get(Calendar.HOUR_OF_DAY));
+            sb.append(" H  ");
+            sb.append(cal.get(Calendar.MINUTE));
+            sb.append(" m  ");
+            return sb.toString();
+    }
     public static Geofence createGeofence(String areaName, double latitude, double longitude, float radius){
         return new Geofence.Builder()
                 .setCircularRegion(latitude,longitude,radius)
