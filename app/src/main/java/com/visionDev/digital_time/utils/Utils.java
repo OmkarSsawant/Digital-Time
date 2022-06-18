@@ -19,6 +19,7 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationServices;
 import com.visionDev.digital_time.models.Campus;
+import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.service.PlaceTrackerService;
 
@@ -36,6 +37,17 @@ public class Utils {
                             calendar.set(Calendar.MINUTE,0);
                             calendar.set(Calendar.SECOND,1);
       return  calendar.getTime().getTime();
+    }
+
+    public static UsageStat getUsageStat(String place,List<UsageStat> stats){
+        for (UsageStat s:
+                stats) {
+            Log.i("Utils", "getUsageStat: "+s);
+            if(s.getPlace().equals(place)){
+                return s;
+            }
+        }
+        return null;
     }
 
     public static String getHourMinuteString(long timeMillis){

@@ -29,6 +29,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.AppViewHolder>
     }
 
     public void setStat(UsageStat s){
+        if(s==null) return;
         apps = s.getUsageStats();
         pkgNames =  apps.keySet().toArray(new String[0]);
         notifyDataSetChanged();
@@ -66,7 +67,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.AppViewHolder>
 
     @Override
     public int getItemCount() {
-        return apps.size();
+        return apps == null ? 0 : apps.size();
     }
 
     static class AppViewHolder extends RecyclerView.ViewHolder{

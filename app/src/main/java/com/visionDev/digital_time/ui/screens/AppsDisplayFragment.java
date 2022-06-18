@@ -26,13 +26,12 @@ public class AppsDisplayFragment extends Fragment {
 
     SharedPrefsManager sharedPrefsManager;
 
-    List<UsageStat> statList ;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPrefsManager = new SharedPrefsManager(requireContext());
-        statList =  sharedPrefsManager.getUsageStats();
+
     }
 
     @Nullable
@@ -42,47 +41,33 @@ public class AppsDisplayFragment extends Fragment {
         return  appListerBinding.getRoot();
     }
 
-    public UsageStat loadApps(){
-        String place = requireArguments().getString(CAMPUS,"all");
-        UsageStat stat = null;
-        if(!place.equals("all")){
-            for (UsageStat s:
-                    statList) {
-                Log.i(TAG, "onViewCreated: "+s.getPlace());
-                if(s.getPlace().equals(place)){
-                    stat = s;
-                }
-            }
-            if(stat==null){
-                Toast.makeText(requireContext(),"No such Stat exists",Toast.LENGTH_SHORT).show();
-                requireActivity().getSupportFragmentManager().popBackStack();
-                return null;
-            }
-        }else{
-            //add all
-            return null;
-        }
-        return stat;
-    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.i(TAG, "onViewCreated: "+statList.size());
-        RecyclerView rv = (RecyclerView) view;
+        RecyclerView rv = appListerBinding.appList;
         rv.setLayoutManager(new LinearLayoutManager(view.getContext()));
         AppsAdapter appsAdapter = new AppsAdapter(requireContext());
         rv.setAdapter(appsAdapter);
+        UsageStat stat = (UsageStat) requireArguments().getSerializable(STAT);
+        if(stat!=null){
+            appsAdapter.setStat(stat);
+            appListerBinding.category.setText(stat.toString());
+        }else{
+            Toast.makeText(view.getContext(),"Stat is null",Toast.LENGTH_SHORT).show();
+        }
+
     }
 
-    public  static AppsDisplayFragment newFragment(String place){
+
+    public  static AppsDisplayFragment newFragment(UsageStat stat){
         AppsDisplayFragment fragment = new AppsDisplayFragment();
         Bundle args = new Bundle();
-        args.putString(CAMPUS,place);
+        args.putSerializable(STAT,stat);
         fragment.setArguments(args);
 
         return fragment;
     }
-    public static final String CAMPUS="app_used.campus";
+    public static final String STAT="app_used.stat";
     private static final String TAG = "AppsDisplayFragment";
 }

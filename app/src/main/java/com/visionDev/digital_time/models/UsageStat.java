@@ -6,10 +6,12 @@ import androidx.work.Data;
 import com.google.firebase.firestore.GeoPoint;
 import com.visionDev.digital_time.service.UsageStatsUploadWorker;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UsageStat {
+
+public class UsageStat implements Serializable {
      String place;
      Map<String,Long> usageStats;
 
