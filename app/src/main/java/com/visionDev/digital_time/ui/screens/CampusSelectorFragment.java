@@ -49,6 +49,16 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
         mGoogleMap.setOnMarkerClickListener(this);
     };
 
+
+    static  CampusSelectorFragment campusSelectorFragment;
+
+    public static Fragment get() {
+        if(campusSelectorFragment!=null)
+            return campusSelectorFragment;
+        campusSelectorFragment = new CampusSelectorFragment();
+        return campusSelectorFragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,

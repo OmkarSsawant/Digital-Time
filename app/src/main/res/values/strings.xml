@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Digital Time</string>
     <string name="map_to_choose_camp">map to choose camp</string>
+    <string name="register_campus">Register Campus</string>
+    <string name="show_registered_campuses">Show Registered Campuses</string>
+    <string name="we_care_your_digital_time">We care your digital time</string>
+    <string name="open_drawer">open</string>
+    <string name="close_drawer">close</string>
 </resources>

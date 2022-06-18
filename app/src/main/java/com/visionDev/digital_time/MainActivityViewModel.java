@@ -2,6 +2,7 @@ package com.visionDev.digital_time;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -29,6 +30,8 @@ import com.visionDev.digital_time.utils.Constants;
 import com.visionDev.digital_time.utils.FutureListener;
 import com.visionDev.digital_time.utils.ListFutureListener;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -68,6 +71,23 @@ public class MainActivityViewModel extends AndroidViewModel {
 
 
 
+    public void fetchCampusNames(ContentResolver cr,ListFutureListener<String> campusNamesListener){
+        firestoreManager.getCampuses(cr, new ListFutureListener<Campus>() {
+            @Override
+            public void onSuccess(List<Campus> result) {
+                final List<String> campusNames = new ArrayList<>();
+                for (Campus campus : result) {
+                    campusNames.add(campus.getName());
+                }
+                campusNamesListener.onSuccess(campusNames);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            campusNamesListener.onSuccess(Collections.emptyList());
+            }
+        });
+    }
 
     @Override
     protected void onCleared() {

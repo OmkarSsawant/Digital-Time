@@ -52,7 +52,6 @@ public class AppsDisplayFragment extends Fragment {
         UsageStat stat = (UsageStat) requireArguments().getSerializable(STAT);
         if(stat!=null){
             appsAdapter.setStat(stat);
-            appListerBinding.category.setText(stat.toString());
         }else{
             Toast.makeText(view.getContext(),"Stat is null",Toast.LENGTH_SHORT).show();
         }

@@ -42,10 +42,11 @@ public class UsageStatsUploadWorker extends Worker{
     @NonNull
     @Override
     public Result doWork() {
+        Log.i(TAG, "doWork: updating ...");
         Utils.getCurrentLocationAndCampus(getApplicationContext(),firestoreManager,new FutureListener<Pair<Campus,Location>>() {
             @Override
             public void onSuccess(Pair<Campus,Location> result) {
-
+                Log.i(TAG, "onSuccess: got location" + result.first + " "+result.second);
                 update(result.first, result.second);
             }
 
@@ -61,8 +62,10 @@ public class UsageStatsUploadWorker extends Worker{
 
     void update(@Nullable Campus campus, Location mLocation){
         UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
+
         Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(sharedPrefsManager.getLastUpdatedTime(),System.currentTimeMillis());
 
+        Log.i(TAG, "update: APPS LENGTH "+ System.currentTimeMillis() + " => " + sharedPrefsManager.getLastUpdatedTime() + " -> " +statsMap.keySet().size());
         Map<String,Long> intervalStats = new HashMap<>();
         String area = Constants.PLACE_OTHER;
         if (campus != null) {
@@ -104,6 +107,12 @@ public class UsageStatsUploadWorker extends Worker{
                 .setLastUpdated(System.currentTimeMillis());
     }
 
+
+    @Override
+    public void onStopped() {
+        super.onStopped();
+        Log.i(TAG, "onStopped: update done");
+    }
 
     public static final String AREA = "area";
     public static final String LOC_LAT = "in";

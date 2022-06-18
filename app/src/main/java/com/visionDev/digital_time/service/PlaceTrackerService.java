@@ -78,7 +78,7 @@ public class PlaceTrackerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForeground(PLACE_TRACKER_NOTIF_ID,createNotification());
         PeriodicWorkRequest recurringUpdateRequest = new PeriodicWorkRequest
-                .Builder(UsageStatsUploadWorker.class,15, TimeUnit.MINUTES)
+                .Builder(UsageStatsUploadWorker.class,1, TimeUnit.MINUTES)
                 .setConstraints(
                         new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)

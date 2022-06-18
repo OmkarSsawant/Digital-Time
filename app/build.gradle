@@ -11,6 +11,9 @@ android {
         viewBinding true
     }
 
+    dataBinding{
+        enabled = true
+    }
     defaultConfig {
         applicationId "com.visionDev.digital_time"
         minSdk 22

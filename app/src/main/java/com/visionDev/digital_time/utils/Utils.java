@@ -26,6 +26,7 @@ import com.visionDev.digital_time.service.PlaceTrackerService;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class Utils {
@@ -52,12 +53,16 @@ public class Utils {
 
     public static String getHourMinuteString(long timeMillis){
             StringBuilder sb = new StringBuilder();
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(timeMillis);
-            sb.append(cal.get(Calendar.HOUR_OF_DAY));
+            long hour = TimeUnit.MILLISECONDS.toHours(timeMillis);
+            sb.append(hour);
             sb.append(" H  ");
-            sb.append(cal.get(Calendar.MINUTE));
+            long minute = TimeUnit.MILLISECONDS.toMinutes(timeMillis) - hour * 60;
+            sb.append(minute);
             sb.append(" m  ");
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(timeMillis) - minute * 60;
+            sb.append(seconds);
+            sb.append(" s ");
+
             return sb.toString();
     }
     public static Geofence createGeofence(String areaName, double latitude, double longitude, float radius){

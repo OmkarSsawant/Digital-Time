@@ -2,6 +2,7 @@ package com.visionDev.digital_time.repository;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.ArraySet;
 import android.util.Log;
 
 import com.google.firebase.encoders.DataEncoder;
@@ -10,14 +11,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.utils.Constants;
+import com.visionDev.digital_time.utils.Utils;
 
 import java.lang.reflect.Type;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -49,6 +54,16 @@ public class SharedPrefsManager {
       return   gson.fromJson(encode,UsageStat.class);
     }
 
+
+    public List<String> getCampusNames(){
+        final List<String> campusNames = new ArrayList<>();
+        for (UsageStat campus : getUsageStats()) {
+            if(!campusNames.contains(campus.getPlace()))
+                campusNames.add(campus.getPlace());
+        }
+        return campusNames;
+    }
+
     public List<UsageStat> getUsageStats(){
         final ArrayList<UsageStat> stats = new ArrayList<>();
         for (String place:
@@ -77,6 +92,6 @@ public class SharedPrefsManager {
     }
 
     public long getLastUpdatedTime(){
-        return mSP.getLong(Constants.STAT_LAST_UPDATED,System.currentTimeMillis());
+        return mSP.getLong(Constants.STAT_LAST_UPDATED, Utils.getTodayDayStart());
     }
 }
