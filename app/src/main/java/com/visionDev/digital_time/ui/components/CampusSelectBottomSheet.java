@@ -69,7 +69,7 @@ public class CampusSelectBottomSheet extends BottomSheetDialogFragment implement
         selectBinding.address.setText(campus.getAddress());
         selectBinding.seekBar.setOnSeekBarChangeListener(this);
         selectBinding.button.setOnClickListener(v->{
-            campus.setRange(radius);
+            campus.setRange(Math.max(radius,10));
         activityViewModel.saveCampus(campus, new FutureListener<Campus>() {
             @Override
             public void onSuccess(Campus result) {
@@ -96,7 +96,7 @@ public class CampusSelectBottomSheet extends BottomSheetDialogFragment implement
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
+        selectBinding.range.setText(i+" m");
     }
 
     @Override
