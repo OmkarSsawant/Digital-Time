@@ -11,6 +11,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.location.LocationManagerCompat;
 import androidx.core.util.Consumer;
 import androidx.lifecycle.AndroidViewModel;
@@ -22,9 +23,13 @@ import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.repository.FirestoreManager;
+import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.service.UsageStatsUploadWorker;
 import com.visionDev.digital_time.utils.Constants;
 import com.visionDev.digital_time.utils.FutureListener;
@@ -43,10 +48,11 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     private final FirestoreManager firestoreManager;
     private final ExecutorService backgroundWorkers = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() +1);
-
+    private final SharedPrefsManager sharedPrefsManager;
     public MainActivityViewModel(@NonNull Application application) {
         super(application);
         firestoreManager = new FirestoreManager(application);
+        sharedPrefsManager = new SharedPrefsManager(application);
     }
 
 
@@ -71,22 +77,13 @@ public class MainActivityViewModel extends AndroidViewModel {
 
 
 
-    public void fetchCampusNames(ContentResolver cr,ListFutureListener<String> campusNamesListener){
-        firestoreManager.getCampuses(cr, new ListFutureListener<Campus>() {
-            @Override
-            public void onSuccess(List<Campus> result) {
-                final List<String> campusNames = new ArrayList<>();
-                for (Campus campus : result) {
-                    campusNames.add(campus.getName());
-                }
-                campusNamesListener.onSuccess(campusNames);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-            campusNamesListener.onSuccess(Collections.emptyList());
-            }
-        });
+    public List<String> getCampusNames(){
+        List<Campus > campuses = sharedPrefsManager.getCampuses();
+        final List<String> campusNames = new ArrayList<>();
+        for (Campus campus : campuses) {
+            campusNames.add(campus.getName());
+        }
+        return campusNames;
     }
 
     @Override
@@ -105,4 +102,19 @@ public class MainActivityViewModel extends AndroidViewModel {
     }
 
     private static final String TAG = "MainActivityViewModel";
+
+    public void syncLocalCampuses() {
+        firestoreManager.getCampusesChangeRef(getApplication().getContentResolver())
+                .addSnapshotListener(backgroundWorkers, (value, error) -> {
+                    if(error==null && value!=null){
+                      List<Campus> campuses =   value.toObjects(Campus.class);
+                        Log.i(TAG, "syncLocalCampuses: "+campuses.size());
+sharedPrefsManager                                .saveCampuses(campuses);
+                    }
+                });
+    }
+
+    public List<Campus> getCampuses() {
+        return sharedPrefsManager.getCampuses();
+    }
 }

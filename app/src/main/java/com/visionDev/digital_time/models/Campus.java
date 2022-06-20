@@ -68,4 +68,9 @@ public class Campus implements Serializable {
     public Geofence toGeofence(){
         return Utils.createGeofence(name,location.getLatitude(),location.getLongitude(),range);
     }
+
+
+    public LatLng toLocation() {
+        return new LatLng(getLocation().getLatitude(),getLocation().getLongitude());
+    }
 }

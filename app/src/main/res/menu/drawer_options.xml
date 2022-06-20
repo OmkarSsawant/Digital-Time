@@ -4,7 +4,20 @@
 <item android:id="@+id/add_campus"
     android:title="@string/register_campus"
     />
-    <item android:id="@+id/show_campuses"
-        android:title="@string/show_registered_campuses"
-        />
+    <item
+        android:id="@+id/all_campuses"
+        android:title="@string/all_campuses">
+        <menu>
+            <group android:id="@+id/enable_campuses"
+                android:title="@string/show_registered_campuses"
+
+                >
+
+            </group>
+
+        </menu>
+    </item>
+
+
+
 </menu>

@@ -15,15 +15,23 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.provider.Settings;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SubMenu;
 import android.widget.Toast;
 
 import com.google.android.libraries.places.api.Places;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.visionDev.digital_time.databinding.ActivityMainBinding;
+import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.service.PlaceTrackerService;
 import com.visionDev.digital_time.ui.screens.CampusSelectorFragment;
+import com.visionDev.digital_time.ui.screens.DashboardFragment;
 import com.visionDev.digital_time.utils.Constants;
 import com.visionDev.digital_time.utils.Utils;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         actionBar.setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24);
         viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(MainActivityViewModel.class);
 
+        viewModel.syncLocalCampuses();
        ActivityResultLauncher<String[]> permissionAsker = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), results->{
             if (results.containsValue(false)){
                 Toast.makeText(this,"Please Grant  Permissions",Toast.LENGTH_SHORT).show();
@@ -85,24 +94,46 @@ public class MainActivity extends AppCompatActivity {
                         R.string.open_drawer,
                         R.string.close_drawer
                 ));
-        binding.drawerNavView.setNavigationItemSelectedListener(item -> {
+        List<Campus> registeredCampuses = viewModel.getCampuses();
 
-            switch (item.getItemId()){
-                case R.id.add_campus:{
-                    getSupportFragmentManager()
-                            .beginTransaction()
-                            .addToBackStack(CampusSelectorFragment.class.getName())
-                            .replace(R.id.host,CampusSelectorFragment.get());
-                    break;
-                }
-                case R.id.show_campuses:{
-                    break;
-                }
+       Menu mainMenu = binding.drawerNavView.getMenu();
+       MenuItem allCampuses = mainMenu.findItem(R.id.all_campuses);
+        SubMenu subMenu  =  allCampuses.getSubMenu();
+        for (Campus registeredCampus : registeredCampuses) {
+            subMenu.add(R.id.enable_campuses,registeredCampus.hashCode(),Menu.NONE,registeredCampus.getName());
+        }
+
+       binding.drawerNavView.setNavigationItemSelectedListener(item -> {
+
+            final int menu_id = item.getItemId();
+            if(menu_id == R.id.add_campus){
+                Toast.makeText(this,"Add campus",Toast.LENGTH_SHORT).show();
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .addToBackStack(CampusSelectorFragment.class.getName())
+                        .replace(R.id.digitime_host,CampusSelectorFragment.get())
+                        .commit();
             }
+            else{
+                //find campus with that name and supply lat long to {@link CampusSelectorFragment}
+
+            }
+
             return false;
         });
 
+
         requireAppService();
+
+        initialAddHomeScreen();
+
+    }
+
+    private void initialAddHomeScreen() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.digitime_host, DashboardFragment.get())
+                .commit();
     }
 
     private void requireAppService() {

@@ -2,20 +2,18 @@ package com.visionDev.digital_time.ui.screens;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsetsController;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -29,12 +27,15 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.visionDev.digital_time.MainActivity;
+import com.visionDev.digital_time.MainActivityViewModel;
 import com.visionDev.digital_time.R;
+import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.ui.components.CampusSelectBottomSheet;
 import com.visionDev.digital_time.utils.Constants;
 
-import java.lang.invoke.ConstantCallSite;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Objects;
 
 public class CampusSelectorFragment extends Fragment implements PlaceSelectionListener, CampusSelectBottomSheet.CampusRadiusListener, GoogleMap.OnMarkerClickListener {
@@ -43,11 +44,35 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
     Place mSelectedCampus;
     Circle circle;
     CampusSelectBottomSheet selectBottomSheet ;
+    MainActivityViewModel viewModel;
     private final OnMapReadyCallback callback = googleMap -> {
         mGoogleMap = googleMap;
         mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
         mGoogleMap.setOnMarkerClickListener(this);
+        loadRegisteredCampuses();
+        zoomToDesiredLocation();
     };
+
+    private void zoomToDesiredLocation() {
+        Bundle args =  getArguments();
+            if(args==null) return;
+          double latitude =       args.getDouble(PLACE_LAT);
+            double longitude = args.getDouble(PLACE_LON);
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude),15f));
+    }
+
+    private void loadRegisteredCampuses() {
+        viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(getActivity().getApplication()).create(MainActivityViewModel.class);
+       List<Campus> campuses =  viewModel.getCampuses();
+        for (Campus campus : campuses) {
+            CircleOptions c = new CircleOptions()
+                    .center(campus.toLocation())
+                    .radius(campus.getRange())
+                    .fillColor(Color.YELLOW)
+                    .strokeColor(Color.MAGENTA);
+            mGoogleMap.addCircle(c);
+        }
+    }
 
 
     static  CampusSelectorFragment campusSelectorFragment;
@@ -67,12 +92,20 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
             if (container != null) {
                 container.getRootView().setSystemUiVisibility(Constants.FULLSCREEN);
             }
-        container.getRootView().setOnSystemUiVisibilityChangeListener(systemUiFlag -> {
-            if(systemUiFlag!=   Constants.FULLSCREEN){
-                container.getRootView().setSystemUiVisibility(Constants.FULLSCREEN);
-            }
-        });
+        container.getRootView().setOnSystemUiVisibilityChangeListener(this::ensureFullScreen);
         return inflater.inflate(R.layout.fragment_campus_selector, container, false);
+    }
+
+    private void ensureFullScreen(int systemUiFlag) {
+        if(systemUiFlag!=   Constants.FULLSCREEN){
+            requireView().getRootView()
+                    .setSystemUiVisibility(Constants.FULLSCREEN);
+           ActionBar rb = ((MainActivity) requireActivity())
+                    .getSupportActionBar();
+           if(rb.isShowing()){
+               rb.hide();
+           }
+        }
     }
 
     @Override

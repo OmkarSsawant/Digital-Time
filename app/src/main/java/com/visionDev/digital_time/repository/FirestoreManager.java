@@ -7,6 +7,7 @@ import android.provider.Settings;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -87,6 +88,14 @@ public class FirestoreManager {
                 .whereEqualTo("name",campus.getName())
                 .get();
 
+    }
+
+    public CollectionReference getCampusesChangeRef(ContentResolver cr){
+        FirebaseFirestore firestore =   FirebaseFirestore.getInstance(APP);
+        @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(cr, Settings.Secure.ANDROID_ID);
+        return  firestore.collection(deviceId)
+                .document("campuses")
+                .collection("places");
     }
 
 }

@@ -43,7 +43,7 @@ public class UsageStatsUploadWorker extends Worker{
     @Override
     public Result doWork() {
         Log.i(TAG, "doWork: updating ...");
-        Utils.getCurrentLocationAndCampus(getApplicationContext(),firestoreManager,new FutureListener<Pair<Campus,Location>>() {
+        Utils.getCurrentLocationAndCampus(getApplicationContext(),sharedPrefsManager,new FutureListener<Pair<Campus,Location>>() {
             @Override
             public void onSuccess(Pair<Campus,Location> result) {
                 Log.i(TAG, "onSuccess: got location" + result.first + " "+result.second);

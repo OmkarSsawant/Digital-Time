@@ -21,6 +21,7 @@ import com.google.android.gms.location.LocationServices;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
+import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.service.PlaceTrackerService;
 
 import java.util.Calendar;
@@ -54,13 +55,13 @@ public class Utils {
     public static String getHourMinuteString(long timeMillis){
             StringBuilder sb = new StringBuilder();
             long hour = TimeUnit.MILLISECONDS.toHours(timeMillis);
-            sb.append(hour);
+            sb.append(hour % 24);
             sb.append(" H  ");
             long minute = TimeUnit.MILLISECONDS.toMinutes(timeMillis) - hour * 60;
-            sb.append(minute);
+            sb.append(minute % 60);
             sb.append(" m  ");
             long seconds = TimeUnit.MILLISECONDS.toSeconds(timeMillis) - minute * 60;
-            sb.append(seconds);
+            sb.append(seconds % 60);
             sb.append(" s ");
 
             return sb.toString();
@@ -85,9 +86,6 @@ public class Utils {
         return sb.toString();
     }
 
-    public static void getCampuses(FirestoreManager fm,Context context,ListFutureListener<Campus> resultFuture){
-        fm.getCampuses(context.getContentResolver(),resultFuture);
-    }
 
 
 
@@ -103,7 +101,7 @@ public class Utils {
     }
 
     @SuppressLint("MissingPermission")
-    public static void getCurrentLocationAndCampus(Context context, FirestoreManager fm, FutureListener<Pair<Campus, Location>> campusFutureListener){
+    public static void getCurrentLocationAndCampus(Context context, SharedPrefsManager sp, FutureListener<Pair<Campus, Location>> campusFutureListener){
         LocationServices.getFusedLocationProviderClient(context)
                 .getCurrentLocation(new CurrentLocationRequest.Builder()
 
@@ -112,25 +110,15 @@ public class Utils {
                 .addOnSuccessListener(location -> {
                     if(location==null) return;
 
-                    getCampuses(fm,context,new ListFutureListener<Campus>() {
-                        @Override
-                        public void onSuccess(List<Campus> result) {
-                            for (Campus c:
-                                    result) {
-                                if(c.contains(location)){
-
-                                    campusFutureListener.onSuccess(new Pair<Campus,Location>(c,location));
-                                    return;
-                                }
-                            }
-                            campusFutureListener.onSuccess(new Pair<Campus,Location>(null,location));
+                    List<Campus> campuses = sp.getCampuses();
+                    for (Campus c:
+                            campuses) {
+                        if(c.contains(location)){
+                            campusFutureListener.onSuccess(new Pair<Campus,Location>(c,location));
+                            return;
                         }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            campusFutureListener.onFailure(e);
-                        }
-                    });
+                    }
+                    campusFutureListener.onSuccess(new Pair<Campus,Location>(null,location));
                 })
                 .addOnFailureListener(Throwable::printStackTrace);
 

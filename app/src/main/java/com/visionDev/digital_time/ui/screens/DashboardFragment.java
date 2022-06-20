@@ -29,6 +29,13 @@ public class DashboardFragment extends Fragment {
     FragmentDashboardBinding binding;
     MainActivityViewModel viewModel;
 
+    private static DashboardFragment fragment;
+    public static Fragment get() {
+        if(fragment!=null) return  fragment;
+        fragment = new DashboardFragment();
+        return fragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +53,11 @@ public class DashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        ActionBar rb = ((MainActivity) requireActivity())
+                .getSupportActionBar();
+        if(!rb.isShowing()){
+            rb.show();
+        }
         SharedPrefsManager sp = new SharedPrefsManager(view.getContext());
         List<String> campuses =  sp.getCampusNames();
         DashboardPagerAdapter pagerAdapter = new DashboardPagerAdapter(requireActivity(),campuses);
