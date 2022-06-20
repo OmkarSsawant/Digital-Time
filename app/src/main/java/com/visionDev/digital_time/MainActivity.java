@@ -11,11 +11,13 @@ import androidx.lifecycle.ViewModelProvider;
 import android.app.AppOpsManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -25,13 +27,16 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.visionDev.digital_time.databinding.ActivityMainBinding;
 import com.visionDev.digital_time.models.Campus;
+import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.service.PlaceTrackerService;
 import com.visionDev.digital_time.ui.screens.CampusSelectorFragment;
 import com.visionDev.digital_time.ui.screens.DashboardFragment;
 import com.visionDev.digital_time.utils.Constants;
+import com.visionDev.digital_time.utils.FutureListener;
 import com.visionDev.digital_time.utils.Utils;
 
 import java.util.List;
+//TODO: just Location.contains
 
 public class MainActivity extends AppCompatActivity {
 
@@ -116,6 +121,21 @@ public class MainActivity extends AppCompatActivity {
             }
             else{
                 //find campus with that name and supply lat long to {@link CampusSelectorFragment}
+                Campus c = Utils.findCampusById(registeredCampuses,menu_id);
+                if(c!=null){
+                    double latitude = c.getLocation().getLatitude();
+                    double longitude = c.getLocation().getLongitude();
+                    Bundle args = new Bundle();
+                    args.putDouble(CampusSelectorFragment.PLACE_LAT,latitude);
+                    args.putDouble(CampusSelectorFragment.PLACE_LON,longitude);
+                    CampusSelectorFragment fragment = CampusSelectorFragment.get();
+                    fragment.setArguments(args);
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .addToBackStack(CampusSelectorFragment.class.getName())
+                            .replace(R.id.digitime_host,fragment)
+                            .commit();
+                }
 
             }
 

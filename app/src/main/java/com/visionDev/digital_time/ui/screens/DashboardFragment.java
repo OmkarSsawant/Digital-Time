@@ -1,6 +1,7 @@
 package com.visionDev.digital_time.ui.screens;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +61,7 @@ public class DashboardFragment extends Fragment {
         }
         SharedPrefsManager sp = new SharedPrefsManager(view.getContext());
         List<String> campuses =  sp.getCampusNames();
+        Log.i(TAG, "onViewCreated: "+campuses);
         DashboardPagerAdapter pagerAdapter = new DashboardPagerAdapter(requireActivity(),campuses);
         binding.campusList.setAdapter(pagerAdapter) ;
          ((MainActivity)requireActivity()).getToolbar();
@@ -67,4 +69,6 @@ public class DashboardFragment extends Fragment {
             tab.setText(campuses.get(viewPagerPos));
         }).attach();
     }
+
+    private static final String TAG = "DashboardFragment";
 }

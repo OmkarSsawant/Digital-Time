@@ -18,6 +18,7 @@ import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.visionDev.digital_time.models.Campus;
 import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
@@ -29,6 +30,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 public class Utils {
     public  static long getTodayDayStart(){
@@ -104,13 +107,15 @@ public class Utils {
     public static void getCurrentLocationAndCampus(Context context, SharedPrefsManager sp, FutureListener<Pair<Campus, Location>> campusFutureListener){
         LocationServices.getFusedLocationProviderClient(context)
                 .getCurrentLocation(new CurrentLocationRequest.Builder()
-
+                        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                         .setGranularity(Granularity.GRANULARITY_FINE)
+                        .setDurationMillis(5_000)
                         .build(),null)
                 .addOnSuccessListener(location -> {
                     if(location==null) return;
 
                     List<Campus> campuses = sp.getCampuses();
+                    Log.i(TAG, "getCurrentLocationAndCampus: "+campuses.size());
                     for (Campus c:
                             campuses) {
                         if(c.contains(location)){
@@ -124,4 +129,13 @@ public class Utils {
 
     }
 
+    @Nullable
+    public static Campus findCampusById(List<Campus> campuses, int hash){
+        for (Campus campus : campuses) {
+            if(campus.hashCode() == hash)
+                return campus;
+        }
+        return null;
+    }
+    private static final String TAG = "Utils";
 }

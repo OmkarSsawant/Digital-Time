@@ -7,10 +7,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
@@ -34,7 +37,6 @@ import com.visionDev.digital_time.ui.components.CampusSelectBottomSheet;
 import com.visionDev.digital_time.utils.Constants;
 
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,7 +60,7 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
             if(args==null) return;
           double latitude =       args.getDouble(PLACE_LAT);
             double longitude = args.getDouble(PLACE_LON);
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude),15f));
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude),20f));
     }
 
     private void loadRegisteredCampuses() {
@@ -68,7 +70,7 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
             CircleOptions c = new CircleOptions()
                     .center(campus.toLocation())
                     .radius(campus.getRange())
-                    .fillColor(Color.YELLOW)
+                    .fillColor(Color.argb(100,255,255,0))
                     .strokeColor(Color.MAGENTA);
             mGoogleMap.addCircle(c);
         }
@@ -77,7 +79,7 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
 
     static  CampusSelectorFragment campusSelectorFragment;
 
-    public static Fragment get() {
+    public static CampusSelectorFragment get() {
         if(campusSelectorFragment!=null)
             return campusSelectorFragment;
         campusSelectorFragment = new CampusSelectorFragment();
@@ -89,11 +91,14 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-            if (container != null) {
-                container.getRootView().setSystemUiVisibility(Constants.FULLSCREEN);
-            }
-        container.getRootView().setOnSystemUiVisibilityChangeListener(this::ensureFullScreen);
         return inflater.inflate(R.layout.fragment_campus_selector, container, false);
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ensureFullScreen(requireView().getSystemUiVisibility());
     }
 
     private void ensureFullScreen(int systemUiFlag) {
@@ -102,7 +107,8 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
                     .setSystemUiVisibility(Constants.FULLSCREEN);
            ActionBar rb = ((MainActivity) requireActivity())
                     .getSupportActionBar();
-           if(rb.isShowing()){
+
+            if(rb.isShowing()){
                rb.hide();
            }
         }
@@ -115,7 +121,7 @@ public class CampusSelectorFragment extends Fragment implements PlaceSelectionLi
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-//            mapFragment.getMapAsync(callback);
+            mapFragment.getMapAsync(callback);
         }
 
         AutocompleteSupportFragment mapSearchFragment =

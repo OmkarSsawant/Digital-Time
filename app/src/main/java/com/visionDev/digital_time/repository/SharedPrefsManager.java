@@ -90,26 +90,23 @@ public class SharedPrefsManager {
     }
 
     public List<Campus> getCampuses(){
-        String encoded = mCampusSP.getString(Constants.CAMPUS_CACHE,"{}");
-        if(encoded.equals("{}")) return Collections.emptyList();
         List<Campus> campuses  = new ArrayList<>();
         for (String key:
-             mUsageSP.getAll().keySet()) {
-            Log.i(TAG, "getCampuses: "+key);
-            if(key.startsWith(Constants.CAMPUS_CACHE)){
-                Log.i(TAG, "gotCampuses:-- "+key);
+             mCampusSP.getAll().keySet()) {
+            Log.i(TAG, "getCampuses: "+mCampusSP.getString(key,"{}"));
                 Campus c = campusGson.fromJson(mCampusSP.getString(key,"{}"),Campus.class);
                 campuses.add(c);
             }
-        }
         return  campuses;
     }
 
     public  void saveCampuses(List<Campus> campus){
-        String encoded = campusGson.toJson(campus);
-        mCampusSP.edit()
-                .putString(Constants.CAMPUS_CACHE+":"+System.currentTimeMillis(),encoded)
-                .apply();
+        SharedPreferences.Editor editor =         mCampusSP.edit();
+        for (Campus c : campus){
+            String encoded = campusGson.toJson(c,Campus.class);
+                 editor.putString(c.getName(),encoded);
+        }
+                editor.apply();
     }
 
     private static final String TAG = "SharedPrefsManager";
