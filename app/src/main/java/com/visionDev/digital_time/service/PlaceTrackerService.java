@@ -61,7 +61,6 @@ public class PlaceTrackerService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate: ");
-        Toast.makeText(this,"STARTED SERVICE",Toast.LENGTH_LONG).show();
         ensureNotificationChannel((NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE));
         SharedPrefsManager sharedPrefsManager = new SharedPrefsManager(getApplicationContext());
         boolean invalidatedDay = Utils.isYesterday(sharedPrefsManager.getLastUpdatedTime());
@@ -130,7 +129,7 @@ public class PlaceTrackerService extends Service {
 
     Notification createNotification(){
       return new NotificationCompat.Builder(this,PLACE_TRACKER_NOTIF_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                .setSmallIcon(R.drawable.ic_launcher_foreground)
               .setContentTitle("Your Digital Time")
               .setContentText("We care your screen time")
               .setContentIntent(getAppOpenIntent())
