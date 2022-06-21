@@ -37,7 +37,9 @@ import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.utils.Constants;
+import com.visionDev.digital_time.utils.Utils;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -62,15 +64,19 @@ public class PlaceTrackerService extends Service {
         Toast.makeText(this,"STARTED SERVICE",Toast.LENGTH_LONG).show();
         ensureNotificationChannel((NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE));
         SharedPrefsManager sharedPrefsManager = new SharedPrefsManager(getApplicationContext());
+        boolean invalidatedDay = Utils.isYesterday(sharedPrefsManager.getLastUpdatedTime());
+        Log.i(TAG, "onCreate: "+invalidatedDay);
+        if(invalidatedDay)
+            sharedPrefsManager.reset();
         FirestoreManager firestoreManager = new FirestoreManager(getApplicationContext());
-    //Note : Each day at 11:58 a new service is created so  firestore is updated
             for (UsageStat s:
                     sharedPrefsManager.getUsageStats()) {
                 Log.i(TAG, "onCreate: "+s);
-                firestoreManager.saveStat(s,getApplicationContext().getContentResolver()).addOnSuccessListener(v-> Log.i(TAG, "doWork: \"Updated Stats\""))
+                firestoreManager.saveStat(s,getApplicationContext().getContentResolver())
+                        .addOnSuccessListener(v-> Log.i(TAG, "doWork: \"Updated Stats\""))
                         .addOnFailureListener(e-> Log.i(TAG, "doWork: \"Updated Failed Stats\""));
             }
-            sharedPrefsManager.reset();
+
 
     }
 

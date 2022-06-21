@@ -9,18 +9,22 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.Operation;
+import androidx.work.WorkManager;
 
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.visionDev.digital_time.MainActivity;
 import com.visionDev.digital_time.MainActivityViewModel;
 import com.visionDev.digital_time.databinding.FragmentDashboardBinding;
-import com.visionDev.digital_time.repository.SharedPrefsManager;
+import com.visionDev.digital_time.service.UsageStatsUploadWorker;
 import com.visionDev.digital_time.ui.components.DashboardPagerAdapter;
+import com.visionDev.digital_time.utils.Utils;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,6 +33,7 @@ public class DashboardFragment extends Fragment {
 
     FragmentDashboardBinding binding;
     MainActivityViewModel viewModel;
+    DashboardPagerAdapter pagerAdapter;
 
     private static DashboardFragment fragment;
     public static Fragment get() {
@@ -51,6 +56,34 @@ public class DashboardFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        updateStats();
+    }
+
+    private void updateStats() {
+        OneTimeWorkRequest updateStatsWork = new OneTimeWorkRequest.Builder(UsageStatsUploadWorker.class)
+                .addTag("one_time_updater")
+                .build();
+        WorkManager wm =  WorkManager.getInstance(requireActivity());
+        wm.enqueue(updateStatsWork)
+                .getState()
+                .observe(this,state ->
+                {
+                    Log.i(TAG, "updateStats: "+state);
+
+                    if(state instanceof Operation.State.SUCCESS){
+                        pagerAdapter.setCampusNames(viewModel.getCampusNames());
+                        //call load on fragment
+                        AppsDisplayFragment appsDisplayFragment = Utils.getFragment(getParentFragmentManager(),AppsDisplayFragment.class);
+                        if(appsDisplayFragment!=null){
+                            appsDisplayFragment.load();
+                        }
+                    }
+                });
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -59,14 +92,12 @@ public class DashboardFragment extends Fragment {
         if(!rb.isShowing()){
             rb.show();
         }
-        SharedPrefsManager sp = new SharedPrefsManager(view.getContext());
-        List<String> campuses =  sp.getCampusNames();
-        Log.i(TAG, "onViewCreated: "+campuses);
-        DashboardPagerAdapter pagerAdapter = new DashboardPagerAdapter(requireActivity(),campuses);
+        pagerAdapter = new DashboardPagerAdapter(requireActivity(),Collections.emptyList());
         binding.campusList.setAdapter(pagerAdapter) ;
+
          ((MainActivity)requireActivity()).getToolbar();
         new TabLayoutMediator(binding.campusTabs,binding.campusList,(tab,viewPagerPos) -> {
-            tab.setText(campuses.get(viewPagerPos));
+            tab.setText(pagerAdapter.getName(viewPagerPos));
         }).attach();
     }
 

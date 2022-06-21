@@ -69,6 +69,7 @@ public class CampusSelectBottomSheet extends BottomSheetDialogFragment implement
         selectBinding.address.setText(campus.getAddress());
         selectBinding.seekBar.setOnSeekBarChangeListener(this);
         selectBinding.button.setOnClickListener(v->{
+            campus.setName(selectBinding.inCampusName.getText().toString());
             campus.setRange(Math.max(radius,10));
         activityViewModel.saveCampus(campus, new FutureListener<Campus>() {
             @Override

@@ -28,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.visionDev.digital_time.models.Campus;
+import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.service.UsageStatsUploadWorker;
@@ -116,5 +117,15 @@ sharedPrefsManager                                .saveCampuses(campuses);
 
     public List<Campus> getCampuses() {
         return sharedPrefsManager.getCampuses();
+    }
+
+    @Nullable
+    public UsageStat getUsageStatByName(String place) {
+        Log.i(TAG, "getUsageStatByName: "+sharedPrefsManager.getUsageStats());
+        return sharedPrefsManager.getUsageStat(place);
+    }
+
+    public List<UsageStat> getUsageStats() {
+        return sharedPrefsManager.getUsageStats();
     }
 }

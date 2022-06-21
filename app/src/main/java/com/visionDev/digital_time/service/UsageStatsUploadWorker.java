@@ -96,11 +96,12 @@ public class UsageStatsUploadWorker extends Worker{
 
         }
 
-
+//FIXME: Here usage stats are not fectched rightly from SP
         UsageStat stat = new UsageStat();
         stat.setPlace(area);
         stat.setLocation(new GeoPoint(mLocation.getLatitude(),mLocation.getLongitude()));
         stat.setUsageStats(intervalStats);
+        Log.i(TAG, "update: SAVING"+stat);
         sharedPrefsManager
                 .saveUsageStat(stat);
         sharedPrefsManager

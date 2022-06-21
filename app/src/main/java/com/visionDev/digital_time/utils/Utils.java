@@ -13,6 +13,8 @@ import android.util.Log;
 import android.util.Pair;
 
 import androidx.core.app.ActivityManagerCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.Geofence;
@@ -24,6 +26,7 @@ import com.visionDev.digital_time.models.UsageStat;
 import com.visionDev.digital_time.repository.FirestoreManager;
 import com.visionDev.digital_time.repository.SharedPrefsManager;
 import com.visionDev.digital_time.service.PlaceTrackerService;
+import com.visionDev.digital_time.ui.screens.AppsDisplayFragment;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -109,7 +112,6 @@ public class Utils {
                 .getCurrentLocation(new CurrentLocationRequest.Builder()
                         .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                         .setGranularity(Granularity.GRANULARITY_FINE)
-                        .setDurationMillis(5_000)
                         .build(),null)
                 .addOnSuccessListener(location -> {
                     if(location==null) return;
@@ -138,4 +140,17 @@ public class Utils {
         return null;
     }
     private static final String TAG = "Utils";
+
+    public static AppsDisplayFragment getFragment(FragmentManager parentFragmentManager, Class appsDisplayFragmentClass) {
+        for (Fragment fragment : parentFragmentManager.getFragments()) {
+            if(fragment.getClass().getName().equals(appsDisplayFragmentClass.getName())){
+                return (AppsDisplayFragment) fragment;
+            }
+        }
+        return null;
+    }
+
+    public static boolean isYesterday(long lastUpdatedTime) {
+        return lastUpdatedTime < getTodayDayStart();
+    }
 }
