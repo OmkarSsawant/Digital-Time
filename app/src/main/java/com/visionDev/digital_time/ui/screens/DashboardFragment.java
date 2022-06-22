@@ -68,7 +68,7 @@ public class DashboardFragment extends Fragment {
         WorkManager wm =  WorkManager.getInstance(requireActivity());
         wm.enqueue(updateStatsWork)
                 .getState()
-                .observe(getViewLifecycleOwner(),state ->
+                .observeForever(state ->
                 {
                     Log.i(TAG, "updateStats: "+state);
 

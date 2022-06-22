@@ -3,6 +3,7 @@ package com.visionDev.digital_time.ui.screens;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
