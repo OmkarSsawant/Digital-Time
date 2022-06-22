@@ -63,7 +63,14 @@ public class UsageStatsUploadWorker extends Worker{
     void update(@Nullable Campus campus, Location mLocation){
         UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
 
-        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(sharedPrefsManager.getLastUpdatedTime(),System.currentTimeMillis());
+        long lastUpdatedTime = sharedPrefsManager.getLastUpdatedTime();
+        Map<String, UsageStats> statsMap=  usageStatsManager.queryAndAggregateUsageStats(lastUpdatedTime,System.currentTimeMillis());
+
+        /*
+        At least {@link Constants.MIN_INTERVAL} minutes should be passed in between before next update
+        * */
+        if(System.currentTimeMillis()  - lastUpdatedTime < Constants.MIN_UPDATE_INTERVAL)
+            return;
 
         Log.i(TAG, "update: APPS LENGTH "+ System.currentTimeMillis() + " => " + sharedPrefsManager.getLastUpdatedTime() + " -> " +statsMap.keySet().size());
         Map<String,Long> intervalStats = new HashMap<>();
@@ -96,7 +103,8 @@ public class UsageStatsUploadWorker extends Worker{
 
         }
 
-//FIXME: Here usage stats are not fectched rightly from SP
+        if(intervalStats.isEmpty()) return;
+
         UsageStat stat = new UsageStat();
         stat.setPlace(area);
         stat.setLocation(new GeoPoint(mLocation.getLatitude(),mLocation.getLongitude()));

@@ -68,17 +68,16 @@ public class DashboardFragment extends Fragment {
         WorkManager wm =  WorkManager.getInstance(requireActivity());
         wm.enqueue(updateStatsWork)
                 .getState()
-                .observe(this,state ->
+                .observe(getViewLifecycleOwner(),state ->
                 {
                     Log.i(TAG, "updateStats: "+state);
 
                     if(state instanceof Operation.State.SUCCESS){
+                        Log.i(TAG, "updateStats: USAGE STATS "+viewModel.getUsageStats());
+                        Log.i(TAG, "updateStats: CAMPUSES "+viewModel.getCampuses());
+                        Log.i(TAG, "updateStats: CAMPUS NAMES "+viewModel.getCampusNames());
                         pagerAdapter.setCampusNames(viewModel.getCampusNames());
-                        //call load on fragment
-                        AppsDisplayFragment appsDisplayFragment = Utils.getFragment(getParentFragmentManager(),AppsDisplayFragment.class);
-                        if(appsDisplayFragment!=null){
-                            appsDisplayFragment.load();
-                        }
+
                     }
                 });
     }
@@ -99,6 +98,11 @@ public class DashboardFragment extends Fragment {
         new TabLayoutMediator(binding.campusTabs,binding.campusList,(tab,viewPagerPos) -> {
             tab.setText(pagerAdapter.getName(viewPagerPos));
         }).attach();
+
+        view.postDelayed(()->{
+            Log.i(TAG, "onViewCreated:  post delayed");
+            updateStats();
+        },15_000);
     }
 
     private static final String TAG = "DashboardFragment";

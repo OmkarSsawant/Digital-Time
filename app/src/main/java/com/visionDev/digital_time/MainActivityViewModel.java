@@ -79,12 +79,7 @@ public class MainActivityViewModel extends AndroidViewModel {
 
 
     public List<String> getCampusNames(){
-        List<Campus > campuses = sharedPrefsManager.getCampuses();
-        final List<String> campusNames = new ArrayList<>();
-        for (Campus campus : campuses) {
-            campusNames.add(campus.getName());
-        }
-        return campusNames;
+        return sharedPrefsManager.getCampusNames();
     }
 
     @Override

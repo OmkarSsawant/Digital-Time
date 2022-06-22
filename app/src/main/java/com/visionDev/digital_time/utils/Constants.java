@@ -5,6 +5,7 @@ import android.view.View;
 
 import androidx.core.util.TimeUtils;
 
+import java.sql.Time;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +14,7 @@ public class Constants {
     public static final String CAMPUS_CACHE = "campus_cache";
     public static final String STORE_LOCAL_USAGE_CACHE = "local_cache.usage";
     public static final String STORE_LOCAL_CAMPUS_CACHE = "local_cache.campus";
+    public static final long MIN_UPDATE_INTERVAL = TimeUnit.MINUTES.toMillis(2);
     public static String[] REQUIRED_PERMISSIONS = new String[]{
            Manifest.permission.ACCESS_COARSE_LOCATION,
            Manifest.permission.ACCESS_FINE_LOCATION,

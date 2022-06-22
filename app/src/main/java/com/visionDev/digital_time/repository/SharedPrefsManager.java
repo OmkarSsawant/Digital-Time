@@ -31,6 +31,7 @@ public class SharedPrefsManager {
     }
 
   public   void saveUsageStat(UsageStat stat){
+
         String jsonEncoded = usageStatGson.toJson(stat);
         mUsageSP.edit()
                 .putString(stat.getPlace(),jsonEncoded)
@@ -101,6 +102,10 @@ public class SharedPrefsManager {
     }
 
     public  void saveCampuses(List<Campus> campus){
+        if(campus.isEmpty())
+            mCampusSP.edit()
+            .clear()
+            .apply();
         SharedPreferences.Editor editor =         mCampusSP.edit();
         for (Campus c : campus){
             String encoded = campusGson.toJson(c,Campus.class);
